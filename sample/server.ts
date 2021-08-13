@@ -1,7 +1,7 @@
 import fastify from 'fastify'
 import mercurius from 'mercurius'
 import mercuriusMetrics from '../src/index'
-
+import faker from 'faker'
 const app = fastify({ logger: true })
 
 const schema = `
@@ -11,7 +11,7 @@ const schema = `
   }
   type Query {
     add(x: Int, y: Int): Int
-    hello: String
+    word: String
     post: Post!
   }
 `
@@ -28,10 +28,14 @@ const resolvers = {
         title: '',
         body: ''
       }
+    },
+    word() {
+      return faker.lorem.word()
     }
   }
 }
 
+app.register(require('fastify-cors')) // you need this if you want to be able to add the server to apollo studio and get introspection working in the modal for adding new graph
 app.register(mercurius, {
   schema,
   resolvers,
