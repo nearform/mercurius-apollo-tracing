@@ -1,9 +1,10 @@
 import { IReport, Report } from 'apollo-reporting-protobuf'
 import { request } from 'undici'
+import { MercuriusApolloTracingOptions } from '.'
 
 export const sendReport = async (
   report: IReport,
-  options: { endpointUrl: string; apiKey: string }
+  options: MercuriusApolloTracingOptions
 ) => {
   return request(
     `${

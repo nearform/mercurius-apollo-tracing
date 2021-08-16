@@ -1,16 +1,17 @@
 import { defaultUsageReportingSignature } from 'apollo-graphql'
-import { ITrace, ITracesAndStats, Report } from 'apollo-reporting-protobuf'
+import { ITrace, Report } from 'apollo-reporting-protobuf'
 
 import fp from 'fastify-plugin'
 import { GraphQLObjectType, GraphQLSchema } from 'graphql'
 import { hrtime } from 'process'
 import { ApolloTraceBuilder } from './ApolloTraceBuilder'
+import { flushTraces } from './flushTraces'
 
 function durationHrTimeToNanoseconds(hrtime: [number, number]) {
   return hrtime[0] * 1e9 + hrtime[1]
 }
 
-export const traces: ApolloTraceBuilder[] = []
+export const traceBuilders: ApolloTraceBuilder[] = []
 
 function hookIntoSchemaResolvers(schema: GraphQLSchema) {
   const schemaTypeMap = schema.getTypeMap()
@@ -50,8 +51,17 @@ function hookIntoSchemaResolvers(schema: GraphQLSchema) {
   }
 }
 
+export type MercuriusApolloTracingOptions = {
+  endpointUrl: string
+  apiKey: string
+  /**
+   * flush interval in milliseconds
+   */
+  flushInterval: number
+}
+
 export default fp(
-  async function (app) {
+  async function (app, opts: MercuriusApolloTracingOptions) {
     app.log.debug('registering mercuriusApolloTracing')
     hookIntoSchemaResolvers(app.graphql.schema)
 
@@ -68,11 +78,15 @@ export default fp(
 
     app.graphql.addHook('onResolution', async (execution, context) => {
       // @ts-expect-error
-      context.__traceBuilder.stopTiming()
-      // @ts-expect-error
+      const traceBuilder = context.__traceBuilder
 
-      console.log('ends2', context.__traceBuilder)
+      traceBuilder.stopTiming()
+      // @ts-expect-error
+      traceBuilders.push(tr)
+      console.log('ends2', traceBuilder)
     })
+
+    flushTraces(app, opts)
   },
   {
     fastify: '3.x',
