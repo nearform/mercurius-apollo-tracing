@@ -6,6 +6,8 @@ export const sendReport = async (
   report: IReport,
   options: MercuriusApolloTracingOptions
 ) => {
+  console.log('~ report', JSON.stringify(report, null, 2))
+
   return request(
     `${
       options.endpointUrl || 'https://usage-reporting.api.apollographql.com'
@@ -15,7 +17,6 @@ export const sendReport = async (
       headers: {
         'user-agent': 'ApolloServerPluginUsageReporting',
         'x-api-key': options.apiKey,
-        'content-encoding': 'gzip',
         accept: 'application/json'
       },
       body: Report.encode(report).finish()

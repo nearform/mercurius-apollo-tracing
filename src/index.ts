@@ -52,12 +52,13 @@ function hookIntoSchemaResolvers(schema: GraphQLSchema) {
 }
 
 export type MercuriusApolloTracingOptions = {
-  endpointUrl: string
+  endpointUrl?: string
+  graphRef: string
   apiKey: string
   /**
    * flush interval in milliseconds
    */
-  flushInterval: number
+  flushInterval?: number
 }
 
 export default fp(
@@ -81,12 +82,11 @@ export default fp(
       const traceBuilder = context.__traceBuilder
 
       traceBuilder.stopTiming()
-      // @ts-expect-error
-      traceBuilders.push(tr)
-      console.log('ends2', traceBuilder)
+
+      traceBuilders.push(traceBuilder)
     })
 
-    flushTraces(app, opts)
+    flushTraces(app, opts, app.graphql.schema)
   },
   {
     fastify: '3.x',

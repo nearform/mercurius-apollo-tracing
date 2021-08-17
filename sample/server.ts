@@ -42,6 +42,9 @@ app.register(mercurius, {
   graphiql: true
 })
 
-app.register(mercuriusMetrics, { apiKey: 'yourApiKey' })
+app.register(mercuriusMetrics, {
+  apiKey: 'service:mercurius-apollo-tracing:KTOI8UoO7aj4PwkFX5WxBw',
+  graphRef: 'mercurius-apollo-tracing@current'
+})
 
 app.listen(3333)

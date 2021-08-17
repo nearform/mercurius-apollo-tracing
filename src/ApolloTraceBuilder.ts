@@ -35,12 +35,13 @@ export class ApolloTraceBuilder {
     }
   ) {
     this.rewriteError = options.rewriteError
-
-    this.querySignature = defaultUsageReportingSignature(
-      document,
-      // @ts-expect-error
-      document.definitions[0].name
-    )
+    //@ts-expect-error not sure why,but we need to prepend the defaultUsageReportingSignature with the hash sign, otherwise we get this error: Unparseable statsRecordKey in traces_per_query map
+    this.querySignature = `# ${document.definitions[0].name} 
+${defaultUsageReportingSignature(
+  document,
+  // @ts-expect-error
+  document.definitions[0].name
+)}`
   }
 
   public startTiming() {
