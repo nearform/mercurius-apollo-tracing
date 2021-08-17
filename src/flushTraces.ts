@@ -47,7 +47,7 @@ export function flushTraces(
         tracesPerQuery[querySignature] &&
         tracesPerQuery[querySignature].trace
       ) {
-        tracesPerQuery[querySignature].trace!.push(Trace.encode(trace).finish())
+        tracesPerQuery[querySignature].trace!.push(trace)
       } else {
         tracesPerQuery[querySignature] = {
           trace: [traceBuilder.trace]
@@ -65,13 +65,17 @@ export function flushTraces(
     ).then(async (res) => {
       console.log('~ res', res)
       if (res.statusCode > 399) {
-        console.log(await res.body.text())
+        try {
+          console.error(await res.body.text())
+        } catch (err) {
+          console.error(err)
+        }
       }
     })
 
     traceBuilders.length = 0 // clear the array
   }, opts.flushInterval ?? 10000)
-
+  interval.unref()
   app.addHook('onClose', (_instance, done) => {
     clearInterval(interval)
     done()
