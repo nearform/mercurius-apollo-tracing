@@ -6,8 +6,6 @@ export const sendReport = async (
   report: IReport,
   options: MercuriusApolloTracingOptions
 ) => {
-  console.log('~ report', JSON.stringify(report, null, 2))
-
   return request(
     `${
       options.endpointUrl || 'https://usage-reporting.api.apollographql.com'
@@ -21,5 +19,14 @@ export const sendReport = async (
       },
       body: Report.encode(report).finish()
     }
-  )
+  ).then(async (res) => {
+    if (res.statusCode >= 400) {
+      try {
+        console.error(await res.body.text())
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    return res
+  })
 }

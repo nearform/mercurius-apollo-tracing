@@ -18,6 +18,7 @@ function internalError(message: string) {
  */
 export class ApolloTraceBuilder {
   private rootNode = new Trace.Node()
+  private logger: Logger = console
 
   public trace = new Trace({ root: this.rootNode })
   public startHrTime?: [number, number]
@@ -35,13 +36,15 @@ export class ApolloTraceBuilder {
     }
   ) {
     this.rewriteError = options.rewriteError
-    //@ts-expect-error not sure why,but we need to prepend the defaultUsageReportingSignature with the hash sign, otherwise we get this error: Unparseable statsRecordKey in traces_per_query map
-    this.querySignature = `# ${document.definitions[0].name} 
-${defaultUsageReportingSignature(
-  document,
-  // @ts-expect-error
-  document.definitions[0].name
-)}`
+    // @ts-expect-error
+    const queryName = document.definitions[0].name?.value ?? ''
+
+    // not sure why,but we need to prepend the defaultUsageReportingSignature with the hash sign, otherwise we get this error: Unparseable statsRecordKey in traces_per_query map
+    this.querySignature = `# ${queryName}\n${defaultUsageReportingSignature(
+      document,
+      // @ts-expect-error
+      document.definitions[0].name
+    )}`
   }
 
   public startTiming() {

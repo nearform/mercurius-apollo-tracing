@@ -1,4 +1,4 @@
-import { ITracesAndStats, Trace } from 'apollo-reporting-protobuf'
+import { ReportHeader, Trace } from 'apollo-reporting-protobuf'
 import { FastifyInstance } from 'fastify'
 import { dateToProtoTimestamp } from './ApolloTraceBuilder'
 import { sendReport } from './sendReport'
@@ -7,6 +7,7 @@ import { GraphQLSchema, printSchema } from 'graphql'
 import { computeCoreSchemaHash } from 'apollo-server-core/dist/plugin/schemaReporting'
 import { OurReport } from 'apollo-server-core/dist/plugin/usageReporting/stats'
 import os, { hostname } from 'os'
+
 /**
  * periodically gathers all the traces and sends them to apollo ingress endpoint
  */
@@ -23,7 +24,7 @@ export function flushTraces(
 
     const schemaHash = computeCoreSchemaHash(printSchema(schema))
 
-    const headers = {
+    const headers: ReportHeader = new ReportHeader({
       hostname: hostname(),
       agentVersion: `mercurius-apollo-tracing@${
         require('../package.json').version
@@ -32,46 +33,31 @@ export function flushTraces(
       uname: `${os.platform()}, ${os.type()}, ${os.release()}, ${os.arch()}`,
       executableSchemaId: schemaHash,
       graphRef: opts.graphRef
-    }
+    })
 
-    const tracesPerQuery: { [k: string]: ITracesAndStats } = {}
+    const report = new OurReport(headers)
+
     for (const traceBuilder of traceBuilders) {
       const { querySignature, trace } = traceBuilder
       trace.http = {
         method: Trace.HTTP.Method.POST
       }
 
-      // const report = new OurReport(headers)
-      // report.endTime = dateToProtoTimestamp(new Date())
-      if (
-        tracesPerQuery[querySignature] &&
-        tracesPerQuery[querySignature].trace
-      ) {
-        tracesPerQuery[querySignature].trace!.push(trace)
-      } else {
-        tracesPerQuery[querySignature] = {
-          trace: [traceBuilder.trace]
-        }
+      const protobufError = Trace.verify(trace)
+      if (protobufError) {
+        throw new Error(`Error encoding trace: ${protobufError}`)
       }
+
+      report.endTime = dateToProtoTimestamp(new Date())
+      report.addTrace({
+        statsReportKey: querySignature,
+        trace,
+        asTrace: true,
+        includeTracesContributingToStats: false
+      })
     }
 
-    sendReport(
-      {
-        tracesPerQuery,
-        endTime: dateToProtoTimestamp(new Date()),
-        header: headers
-      },
-      opts
-    ).then(async (res) => {
-      console.log('~ res', res)
-      if (res.statusCode > 399) {
-        try {
-          console.error(await res.body.text())
-        } catch (err) {
-          console.error(err)
-        }
-      }
-    })
+    sendReport(report, opts)
 
     traceBuilders.length = 0 // clear the array
   }, opts.flushInterval ?? 10000)

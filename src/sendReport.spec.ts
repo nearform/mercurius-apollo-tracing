@@ -39,7 +39,8 @@ describe('sendReport', () => {
 
     const res = await sendReport(fakeReport, {
       endpointUrl: 'http://localhost:3334',
-      apiKey: 'fakeKey'
+      apiKey: 'fakeKey',
+      graphRef: 'myGraph@current'
     })
 
     expect(res.statusCode).toBe(200)

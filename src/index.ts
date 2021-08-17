@@ -1,15 +1,10 @@
-import { defaultUsageReportingSignature } from 'apollo-graphql'
-import { ITrace, Report } from 'apollo-reporting-protobuf'
-
 import fp from 'fastify-plugin'
 import { GraphQLObjectType, GraphQLSchema } from 'graphql'
-import { hrtime } from 'process'
 import { ApolloTraceBuilder } from './ApolloTraceBuilder'
 import { flushTraces } from './flushTraces'
+import 'mercurius' // needed for types
 
-function durationHrTimeToNanoseconds(hrtime: [number, number]) {
-  return hrtime[0] * 1e9 + hrtime[1]
-}
+import { FastifyPluginCallback } from 'fastify'
 
 export const traceBuilders: ApolloTraceBuilder[] = []
 
@@ -56,9 +51,22 @@ export type MercuriusApolloTracingOptions = {
   graphRef: string
   apiKey: string
   /**
+   * useful for lambda-like environment where the whole process exits
+   */
+  sendReportsImmediately?: true
+  /**
    * flush interval in milliseconds
    */
   flushInterval?: number
+}
+
+declare module 'fastify' {
+  interface FastifyRegister {
+    (
+      plugin: FastifyPluginCallback<MercuriusApolloTracingOptions>,
+      opts: MercuriusApolloTracingOptions
+    ): FastifyInstance
+  }
 }
 
 export default fp(
@@ -77,7 +85,7 @@ export default fp(
       return { document }
     })
 
-    app.graphql.addHook('onResolution', async (execution, context) => {
+    app.graphql.addHook('onResolution', async (_execution, context) => {
       // @ts-expect-error
       const traceBuilder = context.__traceBuilder
 
