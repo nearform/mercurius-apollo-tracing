@@ -1,12 +1,15 @@
 import fp from 'fastify-plugin'
 import { GraphQLObjectType, GraphQLSchema } from 'graphql'
 import { ApolloTraceBuilder } from './ApolloTraceBuilder'
-import { flushTraces } from './flushTraces'
+import {
+  addTraceToReportAndFinishTiming,
+  flushTraces,
+  prepareReportWithHeaders
+} from './flushTraces'
 import 'mercurius' // needed for types
 
 import { FastifyPluginCallback } from 'fastify'
-
-export const traceBuilders: ApolloTraceBuilder[] = []
+import { sendReport } from './sendReport'
 
 function hookIntoSchemaResolvers(schema: GraphQLSchema) {
   const schemaTypeMap = schema.getTypeMap()
@@ -69,6 +72,8 @@ declare module 'fastify' {
   }
 }
 
+export const traceBuilders: ApolloTraceBuilder[] = []
+
 export default fp(
   async function (app, opts: MercuriusApolloTracingOptions) {
     app.log.debug('registering mercuriusApolloTracing')
@@ -91,10 +96,21 @@ export default fp(
 
       traceBuilder.stopTiming()
 
-      traceBuilders.push(traceBuilder)
+      const schema = app.graphql.schema
+      if (opts.sendReportsImmediately) {
+        setImmediate(() => {
+          const report = prepareReportWithHeaders(schema, opts)
+          addTraceToReportAndFinishTiming(traceBuilder, report)
+          sendReport(report, opts)
+        })
+      } else {
+        traceBuilders.push(traceBuilder)
+      }
     })
 
-    flushTraces(app, opts, app.graphql.schema)
+    if (!opts.sendReportsImmediately) {
+      flushTraces(app, opts, app.graphql.schema)
+    }
   },
   {
     fastify: '3.x',

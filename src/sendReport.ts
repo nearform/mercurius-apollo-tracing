@@ -20,6 +20,7 @@ export const sendReport = async (
       body: Report.encode(report).finish()
     }
   ).then(async (res) => {
+    console.log(res)
     if (res.statusCode >= 400) {
       try {
         console.error(await res.body.text())

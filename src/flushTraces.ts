@@ -1,6 +1,6 @@
 import { ReportHeader, Trace } from 'apollo-reporting-protobuf'
 import { FastifyInstance } from 'fastify'
-import { dateToProtoTimestamp } from './ApolloTraceBuilder'
+import { ApolloTraceBuilder, dateToProtoTimestamp } from './ApolloTraceBuilder'
 import { sendReport } from './sendReport'
 import { MercuriusApolloTracingOptions, traceBuilders } from './index'
 import { GraphQLSchema, printSchema } from 'graphql'
@@ -22,39 +22,10 @@ export function flushTraces(
     }
     console.log(`flush ${traceBuilders.length}`)
 
-    const schemaHash = computeCoreSchemaHash(printSchema(schema))
-
-    const headers: ReportHeader = new ReportHeader({
-      hostname: hostname(),
-      agentVersion: `mercurius-apollo-tracing@${
-        require('../package.json').version
-      }`,
-      runtimeVersion: `node ${process.version}`,
-      uname: `${os.platform()}, ${os.type()}, ${os.release()}, ${os.arch()}`,
-      executableSchemaId: schemaHash,
-      graphRef: opts.graphRef
-    })
-
-    const report = new OurReport(headers)
+    const report = prepareReportWithHeaders(schema, opts)
 
     for (const traceBuilder of traceBuilders) {
-      const { querySignature, trace } = traceBuilder
-      trace.http = {
-        method: Trace.HTTP.Method.POST
-      }
-
-      const protobufError = Trace.verify(trace)
-      if (protobufError) {
-        throw new Error(`Error encoding trace: ${protobufError}`)
-      }
-
-      report.endTime = dateToProtoTimestamp(new Date())
-      report.addTrace({
-        statsReportKey: querySignature,
-        trace,
-        asTrace: true,
-        includeTracesContributingToStats: false
-      })
+      addTraceToReportAndFinishTiming(traceBuilder, report)
     }
 
     sendReport(report, opts)
@@ -66,4 +37,48 @@ export function flushTraces(
     clearInterval(interval)
     done()
   })
+}
+
+export function addTraceToReportAndFinishTiming(
+  traceBuilder: ApolloTraceBuilder,
+  report: OurReport
+) {
+  const { querySignature, trace } = traceBuilder
+  trace.http = {
+    method: Trace.HTTP.Method.POST
+  }
+
+  const protobufError = Trace.verify(trace)
+  if (protobufError) {
+    throw new Error(`Error encoding trace: ${protobufError}`)
+  }
+
+  report.endTime = dateToProtoTimestamp(new Date())
+  report.addTrace({
+    statsReportKey: querySignature,
+    trace,
+    asTrace: true,
+    includeTracesContributingToStats: false
+  })
+}
+
+export function prepareReportWithHeaders(
+  schema: GraphQLSchema,
+  opts: MercuriusApolloTracingOptions
+) {
+  const schemaHash = computeCoreSchemaHash(printSchema(schema))
+
+  const headers: ReportHeader = new ReportHeader({
+    hostname: hostname(),
+    agentVersion: `mercurius-apollo-tracing@${
+      require('../package.json').version
+    }`,
+    runtimeVersion: `node ${process.version}`,
+    uname: `${os.platform()}, ${os.type()}, ${os.release()}, ${os.arch()}`,
+    executableSchemaId: schemaHash,
+    graphRef: opts.graphRef
+  })
+
+  const report = new OurReport(headers)
+  return report
 }

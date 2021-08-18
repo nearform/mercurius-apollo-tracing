@@ -45,6 +45,7 @@ app.register(mercurius, {
 app.register(mercuriusMetrics, {
   apiKey: 'service:mercurius-apollo-tracing:KTOI8UoO7aj4PwkFX5WxBw',
   graphRef: 'mercurius-apollo-tracing@current'
+  // sendReportsImmediately: true // this is for lambda-like execution model
 })
 
 app.listen(3333)
