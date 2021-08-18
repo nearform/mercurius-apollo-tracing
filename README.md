@@ -46,6 +46,7 @@ Plugin hooks into each resolver in your schema, so performance will be negativel
 
 ## TODO
 
+- implement error reporting(at the moment it only reports performance metrics)
 - check if it works correctly with persisted queries
 - test this out in lambda
 - measure performance compared to running without metrics
