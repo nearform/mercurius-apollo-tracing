@@ -9,7 +9,6 @@ describe('sendReport', () => {
     const fakeReport = {
       header: {
         hostname: 'www.example.com',
-
         graphRef: 'alskncka384u1923e8uino1289jncvo019n'
       },
       tracesPerQuery: {
@@ -37,11 +36,15 @@ describe('sendReport', () => {
     server = http.createServer(requestListener)
     server.listen(3334)
 
-    const res = await sendReport(fakeReport, {
-      endpointUrl: 'http://localhost:3334',
-      apiKey: 'fakeKey',
-      graphRef: 'myGraph@current'
-    })
+    const res = await sendReport(
+      fakeReport,
+      {
+        endpointUrl: 'http://localhost:3334',
+        apiKey: 'fakeKey',
+        graphRef: 'myGraph@current'
+      },
+      {} as any
+    )
 
     expect(res.statusCode).toBe(200)
   })

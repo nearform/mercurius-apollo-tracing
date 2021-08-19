@@ -13,22 +13,23 @@ import os, { hostname } from 'os'
  */
 export function flushTraces(
   app: FastifyInstance,
-  opts: MercuriusApolloTracingOptions,
-  schema: GraphQLSchema
+  opts: MercuriusApolloTracingOptions
 ) {
   const interval = setInterval(() => {
     if (traceBuilders.length === 0) {
       return
     }
-    console.log(`flush ${traceBuilders.length}`)
+    app.log.info(`flushing ${traceBuilders.length} apollo traces`)
 
-    const report = prepareReportWithHeaders(schema, opts)
+    const report = prepareReportWithHeaders(app.graphql.schema, opts)
 
     for (const traceBuilder of traceBuilders) {
       addTraceToReportAndFinishTiming(traceBuilder, report)
     }
 
-    sendReport(report, opts)
+    sendReport(report, opts, app).then(() => {
+      app.log.info(`${traceBuilders.length} apollo traces report sent`)
+    })
 
     traceBuilders.length = 0 // clear the array
   }, opts.flushInterval ?? 10000)

@@ -101,7 +101,8 @@ export default fp(
         setImmediate(() => {
           const report = prepareReportWithHeaders(schema, opts)
           addTraceToReportAndFinishTiming(traceBuilder, report)
-          sendReport(report, opts)
+
+          sendReport(report, opts, app)
         })
       } else {
         traceBuilders.push(traceBuilder)
@@ -109,7 +110,7 @@ export default fp(
     })
 
     if (!opts.sendReportsImmediately) {
-      flushTraces(app, opts, app.graphql.schema)
+      flushTraces(app, opts)
     }
   },
   {
