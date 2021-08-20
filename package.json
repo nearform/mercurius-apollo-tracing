@@ -7,7 +7,8 @@
   "scripts": {
     "prepare": "tsc",
     "build": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -20,7 +21,16 @@
   "devDependencies": {
     "@types/faker": "^5.5.8",
     "@types/jest": "^27.0.1",
-    "@types/node": "^16.6.1",
+    "@types/node": "^16.6.2",
+    "@typescript-eslint/parser": "^4.29.2",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.24.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-standard": "^5.0.0",
     "fastify": "^3.20.2",
     "fastify-cors": "^6.0.2",
     "graphql": "^15.5.1",
@@ -44,7 +54,7 @@
     "apollo-server-types": "^3.1.1",
     "faker": "^5.5.3",
     "fastify-plugin": "^3.0.0",
-    "undici": "^4.4.4"
+    "undici": "^4.4.5"
   },
   "engines": {
     "node": ">= 14"
