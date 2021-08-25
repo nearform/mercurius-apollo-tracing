@@ -1,14 +1,17 @@
-import { defaultUsageReportingSignature } from 'apollo-graphql'
-
 import fp from 'fastify-plugin'
 import { GraphQLObjectType, GraphQLSchema } from 'graphql'
-import { hrtime } from 'process'
+import { ApolloTraceBuilder } from './ApolloTraceBuilder'
+import {
+  addTraceToReportAndFinishTiming,
+  flushTraces,
+  prepareReportWithHeaders
+} from './flushTraces'
+import 'mercurius' // needed for types
 
-function durationHrTimeToNanoseconds(hrtime: [number, number]) {
-  return hrtime[0] * 1e9 + hrtime[1]
-}
+import { FastifyPluginCallback } from 'fastify'
+import { sendReport } from './sendReport'
 
-function setupSchema(schema: GraphQLSchema) {
+function hookIntoSchemaResolvers(schema: GraphQLSchema) {
   const schemaTypeMap = schema.getTypeMap()
 
   for (const schemaType of Object.values(schemaTypeMap)) {
@@ -21,22 +24,24 @@ function setupSchema(schema: GraphQLSchema) {
         if (typeof field.resolve === 'function') {
           const originalFieldResolver = field.resolve
           field.resolve = (self, arg, ctx, info) => {
-            const reportingSignature = defaultUsageReportingSignature({ definitions: [info.operation], kind: 'Document' }, info.operation.name?.value ?? '')
-            // TODO record Report into memory and flush them every 20 sec
+            const operationName = info.operation.name?.value
 
-            console.log(
-              reportingSignature
-            )
+            if (operationName === 'IntrospectionQuery') {
+              return originalFieldResolver(self, arg, ctx, info)
+            }
+            const traceBuilder: ApolloTraceBuilder = ctx.__traceBuilder
 
+            const endTimingCallback = traceBuilder.willResolveField(info)
 
-            const startHrTime = hrtime()
-            const startTime = durationHrTimeToNanoseconds(hrtime(startHrTime))
-            console.log('starts', startTime)
+            const resolvedValue = originalFieldResolver(self, arg, ctx, info)
 
-            return originalFieldResolver(self, arg, ctx, info).finally(() => {
-              const endTime = durationHrTimeToNanoseconds(hrtime(startHrTime))
-              console.log('ends', endTime)
-            })
+            if (resolvedValue instanceof Promise) {
+              return resolvedValue.finally(() => {
+                endTimingCallback()
+              })
+            }
+            endTimingCallback()
+            return resolvedValue
           }
         }
       }
@@ -44,10 +49,69 @@ function setupSchema(schema: GraphQLSchema) {
   }
 }
 
+export type MercuriusApolloTracingOptions = {
+  endpointUrl?: string
+  graphRef: string
+  apiKey: string
+  /**
+   * useful for lambda-like environment where the whole process exits
+   */
+  sendReportsImmediately?: true
+  /**
+   * flush interval in milliseconds
+   */
+  flushInterval?: number
+}
+
+declare module 'fastify' {
+  interface FastifyRegister {
+    (
+      plugin: FastifyPluginCallback<MercuriusApolloTracingOptions>,
+      opts: MercuriusApolloTracingOptions
+    ): FastifyInstance
+  }
+}
+
+export const traceBuilders: ApolloTraceBuilder[] = []
+
 export default fp(
-  async function (app) {
+  async function (app, opts: MercuriusApolloTracingOptions) {
     app.log.debug('registering mercuriusApolloTracing')
-    setupSchema(app.graphql.schema)
+    hookIntoSchemaResolvers(app.graphql.schema)
+
+    app.graphql.addHook('preExecution', async (_schema, document, context) => {
+      const traceBuilder: ApolloTraceBuilder = new ApolloTraceBuilder(
+        document,
+        {}
+      )
+      traceBuilder.startTiming()
+      // @ts-expect-error
+      context.__traceBuilder = traceBuilder
+      return { document }
+    })
+
+    app.graphql.addHook('onResolution', async (_execution, context) => {
+      // @ts-expect-error
+      const traceBuilder = context.__traceBuilder
+
+      traceBuilder.stopTiming()
+
+      const schema = app.graphql.schema
+      if (opts.sendReportsImmediately) {
+        setImmediate(() => {
+          const report = prepareReportWithHeaders(schema, opts)
+          addTraceToReportAndFinishTiming(traceBuilder, report)
+
+          sendReport(report, opts, app)
+        })
+      } else {
+        traceBuilders.push(traceBuilder)
+      }
+    })
+
+    if (!opts.sendReportsImmediately) {
+      flushTraces(app, opts)
+    }
   },
   {
     fastify: '3.x',

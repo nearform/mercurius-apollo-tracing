@@ -1,11 +1,14 @@
 import { IReport, Report } from 'apollo-reporting-protobuf'
+import { FastifyInstance } from 'fastify'
 import { request } from 'undici'
+import { MercuriusApolloTracingOptions } from '.'
 
 export const sendReport = async (
   report: IReport,
-  options: { endpointUrl: string; apiKey: string }
+  options: MercuriusApolloTracingOptions,
+  app: FastifyInstance
 ) => {
-  return request(
+  const res = await request(
     `${
       options.endpointUrl || 'https://usage-reporting.api.apollographql.com'
     }/api/ingress/traces`,
@@ -14,10 +17,18 @@ export const sendReport = async (
       headers: {
         'user-agent': 'ApolloServerPluginUsageReporting',
         'x-api-key': options.apiKey,
-        'content-encoding': 'gzip',
         accept: 'application/json'
       },
       body: Report.encode(report).finish()
     }
   )
+
+  if (res.statusCode >= 400) {
+    try {
+      app.log.error(await res.body.text())
+    } catch (err) {
+      app.log.error(err)
+    }
+  }
+  return res
 }

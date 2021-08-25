@@ -1,0 +1,19 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "extends": ["standard", "prettier"],
+  "plugins": ["prettier"],
+  "env": {
+    "browser": false,
+    "commonjs": true,
+    "es2021": true
+  },
+  "rules": {
+    "prettier/prettier": "error",
+    "import/order": [
+      "error",
+      {
+        "newlines-between": "always"
+      }
+    ]
+  }
+}
