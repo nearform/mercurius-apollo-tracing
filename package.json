@@ -7,7 +7,7 @@
   "scripts": {
     "prepare": "tsc",
     "build": "tsc",
-    "test": "jest",
+    "test": "tap --ts",
     "lint": "eslint"
   },
   "author": "",
@@ -20,8 +20,8 @@
   ],
   "devDependencies": {
     "@types/faker": "^5.5.8",
-    "@types/jest": "^27.0.1",
     "@types/node": "^16.6.2",
+    "@types/tap": "^15.0.5",
     "@typescript-eslint/parser": "^4.29.2",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
@@ -39,7 +39,8 @@
     "mercurius": "^8.1.2",
     "prettier": "^2.3.2",
     "pretty-quick": "^3.1.1",
-    "ts-jest": "^27.0.5",
+    "tap": "^15.0.9",
+    "ts-node": "^10.2.1",
     "typescript": "^4.3.5"
   },
   "husky": {
