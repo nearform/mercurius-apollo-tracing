@@ -12,6 +12,7 @@ const schema = `
   type Query {
     add(x: Int, y: Int): Int
     word: String
+    throwErr: String
     post: Post!
   }
 `
@@ -31,6 +32,9 @@ const resolvers = {
     },
     word() {
       return faker.lorem.word()
+    },
+    throwErr() {
+      throw new Error('ss')
     }
   }
 }
