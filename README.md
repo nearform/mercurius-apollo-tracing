@@ -32,12 +32,12 @@ If you are running in lambda, keep in mind to pass `sendReportsImmediately: true
 
 ## All options
 
-- endpointUrl?: string
-- graphRef: string
-- apiKey: string
-- sendReportsImmediately?: true
+- `endpointUrl?: string`
+- `graphRef: string`
+- `apiKey: string`
+- `sendReportsImmediately?: true`
   - useful for lambda-like environment where the whole process exits right after serving the GQL request
-- flushInterval?: number
+- `flushInterval?: number`
   - 20000 is the default value
 
 ## Performance
@@ -54,5 +54,5 @@ Plugin hooks into each resolver in your schema, so performance will be negativel
 
 ## alternative approach
 
-One alternative way worth considering would be to write a generic adapter for apollo-server plugins.
+One alternative way worth considering would be to write a generic adapter to allow any arbitrary apollo-server plugin to be used inside fastify.
 This should be doable and it could be less effort to maintain onwards than having a separate fastify apollo metrics plugin.
