@@ -56,10 +56,6 @@ app.register(mercurius, {
 
 const apiKey: string = process.env.APOLLO_KEY || ''
 
-console.log('key', process.env.APOLLO_KEY)
-console.log('graph id', process.env.APOLLO_GRAPH_ID)
-console.log('variant', process.env.APOLLO_GRAPH_VARIANT)
-
 app.register(mercuriusApolloRegistry, {
   schema,
   apiKey

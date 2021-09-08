@@ -90,9 +90,19 @@ export default fp(
       return { document }
     })
 
-    app.graphql.addHook('onResolution', async (_execution, context) => {
-      // @ts-expect-error
-      const traceBuilder = context.__traceBuilder
+    app.graphql.addHook('onResolution', async (_execution, context: any) => {
+      const traceBuilder: ApolloTraceBuilder = context.__traceBuilder
+
+      /* NOTE: 
+      On error, the current implementation of Mercurius kills the GraphQL request and returns the error to the user.
+      It does not complete the remaining lifecycle hooks and so we are unable to catch the error in this plugin for reporting to Apollo.
+      github.com/nearform/mercurius/blob/master/docs/hooks.md#manage-errors-from-a-request-hook
+      The below does report errors if they are returned from the preExecution hook (refer again to the link above), 
+      and is expected to report the errors if Mercurial behaviour is changed to run the remaining lifecycle hooks.
+      */
+      if (context.errors) {
+        traceBuilder.didEncounterErrors(context.errors)
+      }
 
       traceBuilder.stopTiming()
 
