@@ -26,7 +26,9 @@ export class ApolloTraceBuilder {
   private nodes = new Map<string, Trace.Node>([
     [responsePathAsString(), this.rootNode]
   ])
+
   private readonly rewriteError?: (err: GraphQLError) => GraphQLError | null
+
   querySignature: string
 
   public constructor(
@@ -36,15 +38,13 @@ export class ApolloTraceBuilder {
     }
   ) {
     this.rewriteError = options.rewriteError
-    // @ts-expect-error
-    const queryName = document.definitions[0].name?.value ?? ''
 
-    // not sure why,but we need to prepend the defaultUsageReportingSignature with the hash sign, otherwise we get this error: Unparseable statsRecordKey in traces_per_query map
-    this.querySignature = `# ${queryName}\n${defaultUsageReportingSignature(
-      document,
-      // @ts-expect-error
-      document.definitions[0].name
-    )}`
+    // the defaultUsageReportingSignature must be prepended with the hash sign, a string and a carriage return, otherwise we get this error: Unparseable statsRecordKey in traces_per_query map
+    // the apollo server uses the request context operationName as the string (eg '# ${context.operationName}\n${traceSignature}')
+    // it also uses this operationName as the second argument to the signature generation function
+    // mercurial (MercurialContext) does not provide access to this operationName so we currently are unable to do the same
+    // the operationName is relevant only if a query contains multiple operations
+    this.querySignature = `# -\n${defaultUsageReportingSignature(document, '')}`
   }
 
   public startTiming() {

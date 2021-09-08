@@ -72,7 +72,7 @@ declare module 'fastify' {
   }
 }
 
-export const traceBuilders: ApolloTraceBuilder[] = []
+const traceBuilders: ApolloTraceBuilder[] = []
 
 export default fp(
   async function (app, opts: MercuriusApolloTracingOptions) {
@@ -110,7 +110,7 @@ export default fp(
     })
 
     if (!opts.sendReportsImmediately) {
-      flushTraces(app, opts)
+      flushTraces(app, traceBuilders, opts)
     }
   },
   {

@@ -9,20 +9,22 @@ import { GraphQLSchema, printSchema } from 'graphql'
 import { ApolloTraceBuilder, dateToProtoTimestamp } from './ApolloTraceBuilder'
 import { sendReport } from './sendReport'
 
-import { MercuriusApolloTracingOptions, traceBuilders } from './index'
+import { MercuriusApolloTracingOptions } from './index'
 
 /**
  * periodically gathers all the traces and sends them to apollo ingress endpoint
  */
 export function flushTraces(
   app: FastifyInstance,
+  traceBuilders: ApolloTraceBuilder[],
   opts: MercuriusApolloTracingOptions
 ) {
   const interval = setInterval(() => {
     if (traceBuilders.length === 0) {
       return
     }
-    app.log.info(`flushing ${traceBuilders.length} apollo traces`)
+    const tracesCount = traceBuilders.length
+    app.log.info(`flushing ${tracesCount} apollo traces`)
 
     const report = prepareReportWithHeaders(app.graphql.schema, opts)
 
@@ -31,7 +33,7 @@ export function flushTraces(
     }
 
     sendReport(report, opts, app).then(() => {
-      app.log.info(`${traceBuilders.length} apollo traces report sent`)
+      app.log.info(`${tracesCount} apollo traces report sent`)
     })
 
     traceBuilders.length = 0 // clear the array
