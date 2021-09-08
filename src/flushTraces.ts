@@ -1,12 +1,15 @@
-import { ReportHeader, Trace } from 'apollo-reporting-protobuf'
+import os, { hostname } from 'os'
+
 import { FastifyInstance } from 'fastify'
-import { ApolloTraceBuilder, dateToProtoTimestamp } from './ApolloTraceBuilder'
-import { sendReport } from './sendReport'
-import { MercuriusApolloTracingOptions, traceBuilders } from './index'
-import { GraphQLSchema, printSchema } from 'graphql'
+import { ReportHeader, Trace } from 'apollo-reporting-protobuf'
 import { computeCoreSchemaHash } from 'apollo-server-core/dist/plugin/schemaReporting'
 import { OurReport } from 'apollo-server-core/dist/plugin/usageReporting/stats'
-import os, { hostname } from 'os'
+import { GraphQLSchema, printSchema } from 'graphql'
+
+import { ApolloTraceBuilder, dateToProtoTimestamp } from './ApolloTraceBuilder'
+import { sendReport } from './sendReport'
+
+import { MercuriusApolloTracingOptions, traceBuilders } from './index'
 
 /**
  * periodically gathers all the traces and sends them to apollo ingress endpoint

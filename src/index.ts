@@ -1,14 +1,14 @@
+import { FastifyPluginCallback } from 'fastify'
 import fp from 'fastify-plugin'
 import { GraphQLObjectType, GraphQLSchema } from 'graphql'
+import 'mercurius' // needed for types
+
 import { ApolloTraceBuilder } from './ApolloTraceBuilder'
 import {
   addTraceToReportAndFinishTiming,
   flushTraces,
   prepareReportWithHeaders
 } from './flushTraces'
-import 'mercurius' // needed for types
-
-import { FastifyPluginCallback } from 'fastify'
 import { sendReport } from './sendReport'
 
 function hookIntoSchemaResolvers(schema: GraphQLSchema) {
