@@ -44,14 +44,6 @@ If you are running in lambda, keep in mind to pass `sendReportsImmediately: true
 
 Plugin hooks into each resolver in your schema, so performance will be negatively affected.
 
-## TODO
-
-- implement error reporting(at the moment it only reports performance metrics)
-- check if it works correctly with persisted queries
-- test this out in lambda
-- measure performance compared to running without metrics
-- gzip the payload
-
 ## alternative approach
 
 One alternative way worth considering would be to write a generic adapter to allow any arbitrary apollo-server plugin to be used inside fastify.

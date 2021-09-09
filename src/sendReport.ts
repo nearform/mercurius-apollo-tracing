@@ -1,6 +1,7 @@
 import { IReport, Report } from 'apollo-reporting-protobuf'
 import { FastifyInstance } from 'fastify'
 import { request } from 'undici'
+
 import { MercuriusApolloTracingOptions } from '.'
 
 export const sendReport = async (

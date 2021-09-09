@@ -1,7 +1,14 @@
+'use strict'
+
+import dotenv from 'dotenv'
 import fastify from 'fastify'
 import mercurius from 'mercurius'
-import mercuriusMetrics from '../src/index'
 import faker from 'faker'
+
+import mercuriusMetrics from '../src/index'
+
+dotenv.config()
+
 const app = fastify({ logger: true })
 
 const schema = `
@@ -46,10 +53,12 @@ app.register(mercurius, {
   graphiql: true
 })
 
+const apiKey: string = process.env.APOLLO_KEY || ''
+
 app.register(mercuriusMetrics, {
-  apiKey: 'service:mercurius-apollo-tracing:KTOI8UoO7aj4PwkFX5WxBw',
-  graphRef: 'mercurius-apollo-tracing@current'
+  apiKey,
+  graphRef: process.env.APOLLO_GRAPH_ID + '@' + process.env.APOLLO_GRAPH_VARIANT
   // sendReportsImmediately: true // this is for lambda-like execution model
 })
 
-app.listen(3333)
+app.listen(3000)
