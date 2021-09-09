@@ -7,7 +7,7 @@
   "scripts": {
     "prepare": "tsc",
     "build": "tsc",
-    "test": "tap --ts",
+    "test": "tap --ts --no-check-coverage",
     "lint": "eslint",
     "example": "nodemon --watch './**/*.ts' --exec 'ts-node' ./examples/basic.ts"
   },
