@@ -1,14 +1,21 @@
+import zlib from 'zlib'
+import { promisify } from 'util'
+
 import { IReport, Report } from 'apollo-reporting-protobuf'
 import { FastifyInstance } from 'fastify'
 import { request } from 'undici'
 
 import { MercuriusApolloTracingOptions } from '.'
 
+const gzip = promisify(zlib.gzip)
+
 export const sendReport = async (
   report: IReport,
   options: MercuriusApolloTracingOptions,
   app: FastifyInstance
 ) => {
+  const gzippedReport = await gzip(Report.encode(report).finish())
+
   const res = await request(
     `${
       options.endpointUrl || 'https://usage-reporting.api.apollographql.com'
@@ -18,9 +25,10 @@ export const sendReport = async (
       headers: {
         'user-agent': 'ApolloServerPluginUsageReporting',
         'x-api-key': options.apiKey,
-        accept: 'application/json'
+        accept: 'application/json',
+        'content-encoding': 'gzip'
       },
-      body: Report.encode(report).finish()
+      body: gzippedReport
     }
   )
 
