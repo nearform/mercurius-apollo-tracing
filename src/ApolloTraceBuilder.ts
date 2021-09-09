@@ -42,7 +42,7 @@ export class ApolloTraceBuilder {
     // the defaultUsageReportingSignature must be prepended with the hash sign, a string and a carriage return, otherwise we get this error: Unparseable statsRecordKey in traces_per_query map
     // the apollo server uses the request context operationName as the string (eg '# ${context.operationName}\n${traceSignature}')
     // it also uses this operationName as the second argument to the signature generation function
-    // mercurial (MercurialContext) does not provide access to this operationName so we currently are unable to do the same
+    // mercurius (MercuriusContext) does not provide access to this operationName so we currently are unable to do the same
     // the operationName is relevant only if a query contains multiple operations
     this.querySignature = `# -\n${defaultUsageReportingSignature(document, '')}`
   }

@@ -98,7 +98,7 @@ export default fp(
       It does not complete the remaining lifecycle hooks and so we are unable to catch the error in this plugin for reporting to Apollo.
       github.com/nearform/mercurius/blob/master/docs/hooks.md#manage-errors-from-a-request-hook
       The below does report errors if they are returned from the preExecution hook (refer again to the link above), 
-      and is expected to report the errors if Mercurial behaviour is changed to run the remaining lifecycle hooks.
+      and is expected to report the errors if Mercurius behaviour is changed to run the remaining lifecycle hooks.
       */
       if (context.errors) {
         traceBuilder.didEncounterErrors(context.errors)
