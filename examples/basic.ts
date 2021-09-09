@@ -4,7 +4,6 @@ import dotenv from 'dotenv'
 import fastify from 'fastify'
 import mercurius from 'mercurius'
 import faker from 'faker'
-import mercuriusApolloRegistry from 'mercurius-apollo-registry'
 
 import mercuriusMetrics from '../src/index'
 
@@ -55,11 +54,6 @@ app.register(mercurius, {
 })
 
 const apiKey: string = process.env.APOLLO_KEY || ''
-
-app.register(mercuriusApolloRegistry, {
-  schema,
-  apiKey
-})
 
 app.register(mercuriusMetrics, {
   apiKey,
