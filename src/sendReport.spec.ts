@@ -77,9 +77,6 @@ tap.test('with mocked http', async (t) => {
     agent.enableNetConnect()
     setGlobalDispatcher(originalDispatcher)
   })
-  t.test('thing', async (tt) => {
-    return tt.equal(2, 2)
-  })
   t.test('sendReport success', async (tt) => {
     agent
       .get(endpointUrl)
