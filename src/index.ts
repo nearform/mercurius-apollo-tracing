@@ -76,6 +76,10 @@ const traceBuilders: ApolloTraceBuilder[] = []
 
 export default fp(
   async function (app, opts: MercuriusApolloTracingOptions) {
+    if (!opts.apiKey) {
+      throw new Error('an Apollo Studio API key is required')
+    }
+
     app.log.debug('registering mercuriusApolloTracing')
     hookIntoSchemaResolvers(app.graphql.schema)
 
