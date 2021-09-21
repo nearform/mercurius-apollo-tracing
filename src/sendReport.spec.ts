@@ -1,6 +1,3 @@
-import http from 'http'
-import zlib from 'zlib'
-
 import { Report } from 'apollo-reporting-protobuf'
 import tap from 'tap'
 import {
@@ -12,6 +9,7 @@ import {
 import sinon from 'sinon'
 
 import { sendReport } from './sendReport'
+import { createSimpleServer } from './createSimpleServer'
 
 const fakeReport = {
   header: {
@@ -28,23 +26,10 @@ const fakeReport = {
 }
 
 tap.test('sendReport encodes the report', async (t) => {
-  const requestListener = function (req, res) {
-    const chunks: any[] = []
-    req.on('data', (chunk: any) => chunks.push(chunk))
-    req.on('end', () => {
-      const data = Buffer.concat(chunks)
-
-      const unzippedData = zlib.unzipSync(data)
-
-      const reportDecoded = Report.decode(unzippedData)
-      t.same(reportDecoded, fakeReport)
-    })
-    res.writeHead(200)
-    res.end()
-  }
-
-  const server = http.createServer(requestListener)
-  server.listen(3334)
+  const server = createSimpleServer((unzippedData) => {
+    const reportDecoded = Report.decode(unzippedData)
+    t.same(reportDecoded, fakeReport)
+  })
 
   const res = await sendReport(
     fakeReport,

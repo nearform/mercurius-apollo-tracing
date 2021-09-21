@@ -1,9 +1,6 @@
-'use strict'
-
 import tap from 'tap'
 import Fastify from 'fastify'
 import fp from 'fastify-plugin'
-import faker from 'faker'
 
 import plugin from './index'
 
@@ -35,7 +32,7 @@ tap.test('plugin registration', async (t) => {
   t.test('plugin should exist and load without error', async () => {
     fastify.register(plugin, {
       apiKey: 'test-api-key',
-      schema: faker.lorem.paragraph()
+      schema: ''
     })
 
     return fastify.ready()
@@ -43,7 +40,7 @@ tap.test('plugin registration', async (t) => {
 
   t.test('plugin should throw an error if api key is missing', async (t) => {
     fastify.register(plugin, {
-      schema: faker.lorem.paragraph()
+      schema: ''
     })
 
     return t.rejects(

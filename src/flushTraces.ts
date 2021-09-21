@@ -19,7 +19,7 @@ export function flushTraces(
   traceBuilders: ApolloTraceBuilder[],
   opts: MercuriusApolloTracingOptions
 ) {
-  const interval = setInterval(() => {
+  const flushTracingNow = async () => {
     if (traceBuilders.length === 0) {
       return
     }
@@ -32,17 +32,20 @@ export function flushTraces(
       addTraceToReportAndFinishTiming(traceBuilder, report)
     }
 
-    sendReport(report, opts, app).then(() => {
-      app.log.info(`${tracesCount} apollo traces report sent`)
-    })
+    const res = await sendReport(report, opts, app)
+    app.log.info(`${tracesCount} apollo traces report sent`)
 
-    traceBuilders.length = 0 // clear the array
-  }, opts.flushInterval ?? 10000)
+    traceBuilders.length = 0
+    return res
+  }
+  const interval = setInterval(flushTracingNow, opts.flushInterval ?? 10000)
   interval.unref()
   app.addHook('onClose', (_instance, done) => {
     clearInterval(interval)
     done()
   })
+
+  app.decorate('flushApolloTracing', flushTracingNow)
 }
 
 export function addTraceToReportAndFinishTiming(

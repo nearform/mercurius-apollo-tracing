@@ -15,6 +15,8 @@ yarn add mercurius-apollo-tracing -S
 plugin can be registered like this:
 
 ```ts
+import mercuriusMetrics from 'mercurius-apollo-tracing'
+
 app.register(require('fastify-cors')) // you need this if you want to be able to add the server to apollo studio and get introspection working in the modal for adding new graph
 app.register(mercurius, {
   schema,
@@ -30,6 +32,14 @@ app.register(mercuriusMetrics, {
 
 If you are running in lambda, keep in mind to pass `sendReportsImmediately: true` flag.
 
+## Manual flush
+
+You can flush traces manually at any time by :
+
+```js
+await app.flushApolloTracing()
+```
+
 ## All options
 
 - `endpointUrl?: string`
@@ -42,7 +52,7 @@ If you are running in lambda, keep in mind to pass `sendReportsImmediately: true
 
 ## Performance
 
-Plugin hooks into each resolver in your schema, so performance will be negatively affected.
+This plugin hooks into your schema wrapping each function, so performance will be negatively affected.
 
 ## alternative approach
 

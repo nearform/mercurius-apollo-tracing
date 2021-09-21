@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from 'fastify'
 import fp from 'fastify-plugin'
-import { GraphQLObjectType, GraphQLSchema } from 'graphql'
 import 'mercurius' // needed for types
+import { Dispatcher } from 'undici'
 
 import { ApolloTraceBuilder } from './ApolloTraceBuilder'
 import {
@@ -9,45 +9,8 @@ import {
   flushTraces,
   prepareReportWithHeaders
 } from './flushTraces'
+import { hookIntoSchemaResolvers } from './hookIntoSchemaResolvers'
 import { sendReport } from './sendReport'
-
-function hookIntoSchemaResolvers(schema: GraphQLSchema) {
-  const schemaTypeMap = schema.getTypeMap()
-
-  for (const schemaType of Object.values(schemaTypeMap)) {
-    // Handle fields on schema type
-    if (typeof (schemaType as GraphQLObjectType).getFields === 'function') {
-      for (const [_fieldName, field] of Object.entries(
-        (schemaType as GraphQLObjectType).getFields()
-      )) {
-        // Override resolvers so that we can do timing recording
-        if (typeof field.resolve === 'function') {
-          const originalFieldResolver = field.resolve
-          field.resolve = (self, arg, ctx, info) => {
-            const operationName = info.operation.name?.value
-
-            if (operationName === 'IntrospectionQuery') {
-              return originalFieldResolver(self, arg, ctx, info)
-            }
-            const traceBuilder: ApolloTraceBuilder = ctx.__traceBuilder
-
-            const endTimingCallback = traceBuilder.willResolveField(info)
-
-            const resolvedValue = originalFieldResolver(self, arg, ctx, info)
-
-            if (resolvedValue instanceof Promise) {
-              return resolvedValue.finally(() => {
-                endTimingCallback()
-              })
-            }
-            endTimingCallback()
-            return resolvedValue
-          }
-        }
-      }
-    }
-  }
-}
 
 export type MercuriusApolloTracingOptions = {
   endpointUrl?: string
@@ -69,6 +32,10 @@ declare module 'fastify' {
       plugin: FastifyPluginCallback<MercuriusApolloTracingOptions>,
       opts: MercuriusApolloTracingOptions
     ): FastifyInstance
+  }
+
+  interface FastifyInstance {
+    flushApolloTracing: () => Promise<Dispatcher.ResponseData | undefined>
   }
 }
 
@@ -94,18 +61,15 @@ export default fp(
       return { document }
     })
 
-    app.graphql.addHook('onResolution', async (_execution, context: any) => {
+    app.graphql.addHook('onResolution', async (execution, context: any) => {
       const traceBuilder: ApolloTraceBuilder = context.__traceBuilder
 
-      /* NOTE: 
-      On error, the current implementation of Mercurius kills the GraphQL request and returns the error to the user.
-      It does not complete the remaining lifecycle hooks and so we are unable to catch the error in this plugin for reporting to Apollo.
-      github.com/nearform/mercurius/blob/master/docs/hooks.md#manage-errors-from-a-request-hook
-      The below does report errors if they are returned from the preExecution hook (refer again to the link above), 
-      and is expected to report the errors if Mercurius behaviour is changed to run the remaining lifecycle hooks.
-      */
       if (context.errors) {
+        // The below reports errors if they are returned from preExecution hook
         traceBuilder.didEncounterErrors(context.errors)
+      } else if (execution.errors) {
+        // this reports errors from execution
+        traceBuilder.didEncounterErrors(execution.errors)
       }
 
       traceBuilder.stopTiming()
