@@ -9,9 +9,9 @@ import { basicResolvers, basicSchema } from '../examples/basicSchema'
 import { createSimpleServer } from './createSimpleServer'
 
 tap.cleanSnapshot = (s) => {
-  return s.replaceAll(
+  return s.replace(
     // we need to replace any timings with 0, because they change from run to run
-    /"(nanos|seconds|startTime|endTime|durationNs)": [0-9]+,/g,
+    /"(nanos|seconds|startTime|endTime|durationNs)": [0-9]+,/gm,
     '$1: 0,'
   )
 }
