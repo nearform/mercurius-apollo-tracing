@@ -1,5 +1,3 @@
-'use strict'
-
 import dotenv from 'dotenv'
 import fastify from 'fastify'
 import mercurius from 'mercurius'
