@@ -18,6 +18,7 @@ export const sendReport = async (
   const url = `${
     options.endpointUrl || 'https://usage-reporting.api.apollographql.com'
   }/api/ingress/traces`
+
   app.log.info(`Sending report to ${url}`)
 
   const res = await request(url, {

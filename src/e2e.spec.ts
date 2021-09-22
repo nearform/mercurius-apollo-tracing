@@ -1,11 +1,11 @@
 import tap from 'tap'
 import { Report } from 'apollo-reporting-protobuf'
-
 import fastify from 'fastify'
 import mercurius from 'mercurius'
 
 import mercuriusMetrics from '../src/index'
 import { basicResolvers, basicSchema } from '../examples/basicSchema'
+
 import { createSimpleServer } from './createSimpleServer'
 
 tap.cleanSnapshot = (s) => {

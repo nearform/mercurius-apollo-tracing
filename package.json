@@ -7,7 +7,7 @@
   "scripts": {
     "prepare": "tsc && husky install",
     "build": "tsc",
-    "test": "NODE_ENV=test tap --ts --no-check-coverage",
+    "test": "NODE_ENV=test tap --ts --no-check-coverage --jobs=1",
     "pretty-quick": "pretty-quick --staged",
     "lint": "eslint",
     "example": "nodemon --watch './**/*.ts' --exec 'ts-node' ./examples/basic.ts"

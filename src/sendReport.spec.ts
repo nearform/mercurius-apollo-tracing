@@ -7,6 +7,7 @@ import {
   Dispatcher
 } from 'undici'
 import sinon from 'sinon'
+import { FastifyInstance } from 'fastify'
 
 import { sendReport } from './sendReport'
 import { createSimpleServer } from './createSimpleServer'
@@ -25,6 +26,14 @@ const fakeReport = {
   }
 }
 
+const logErrorSpy = sinon.spy()
+const fakeFastifyInstance = {
+  log: {
+    error: logErrorSpy,
+    info: sinon.spy()
+  }
+} as any as FastifyInstance
+
 tap.test('sendReport encodes the report', async (t) => {
   const server = createSimpleServer((unzippedData) => {
     const reportDecoded = Report.decode(unzippedData)
@@ -38,7 +47,7 @@ tap.test('sendReport encodes the report', async (t) => {
       apiKey: 'fakeKey',
       graphRef: 'myGraph@current'
     },
-    {} as any
+    fakeFastifyInstance
   )
 
   t.equal(res.statusCode, 200)
@@ -62,6 +71,7 @@ tap.test('with mocked http', async (t) => {
     agent.enableNetConnect()
     setGlobalDispatcher(originalDispatcher)
   })
+
   t.test('sendReport success', async (tt) => {
     agent
       .get(endpointUrl)
@@ -78,7 +88,7 @@ tap.test('with mocked http', async (t) => {
         apiKey: 'fakeKey',
         graphRef: 'myGraph@current'
       },
-      {} as any
+      fakeFastifyInstance
     )
     return tt.equal(res.statusCode, 200)
   })
@@ -91,7 +101,6 @@ tap.test('with mocked http', async (t) => {
       })
       .reply(400, 'something went wrong')
 
-    const logErrorSpy = sinon.spy()
     const res = await sendReport(
       fakeReport,
       {
@@ -99,11 +108,7 @@ tap.test('with mocked http', async (t) => {
         apiKey: 'fakeKey',
         graphRef: 'myGraph@current'
       },
-      {
-        log: {
-          error: logErrorSpy
-        }
-      } as any
+      fakeFastifyInstance
     )
     tt.equal(res.statusCode, 400)
     return tt.equal(logErrorSpy.called, true)
