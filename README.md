@@ -54,6 +54,10 @@ await app.flushApolloTracing()
 
 This plugin hooks into your schema wrapping each function, so performance will be negatively affected.
 
+## Persisted queries
+
+Yes this plugin works fine with them.
+
 ## alternative approach
 
 One alternative way worth considering would be to write a generic adapter to allow any arbitrary apollo-server plugin to be used inside fastify.
