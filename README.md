@@ -52,7 +52,15 @@ await app.flushApolloTracing()
 
 ## Performance
 
-Plugin hooks into each resolver in your schema, so performance will be negatively affected.
+Plugin hooks into each resolver in your schema, so performance will be negatively affected. Performance will be impacted more if you have many fast/small resolvers. If you have less resolvers and it takes more time to resolve them, perf difference is lower.
+We've measured it in the benchmark [here](https://github.com/benawad/node-graphql-benchmarks/blob/4cc68bcf3134056da0ca0ae6af4ef860e948d887/benchmarks/mercurius+graphql-jit.js) and observed slow down of roughly 25 percent. In real world API where resolvers actually do something the difference will be much smaller though. These were actual results:
+
+| Run | Without this plugin | With the plugin |
+| --- | ------------------- | --------------- |
+| 1   | 9125                | 6861            |
+| 2   | 9162                | 6866            |
+
+Ran on Ubuntu 21.04, Node 16.7.0 and AMD Ryzen 5900x.
 
 ## Persisted queries
 
