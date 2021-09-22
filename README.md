@@ -1,6 +1,6 @@
 # mercurius-apollo-tracing
 
-Experimental fastify plugin to gather performance metrics from your Graphql resolvers.
+Fastify plugin to be used with [Mercurius](https://mercurius.dev) to collect performance metrics from your Graphql resolvers and send them to apollo studio.
 
 ## Install
 
@@ -52,13 +52,8 @@ await app.flushApolloTracing()
 
 ## Performance
 
-This plugin hooks into your schema wrapping each function, so performance will be negatively affected.
+Plugin hooks into each resolver in your schema, so performance will be negatively affected.
 
 ## Persisted queries
 
 Yes this plugin works fine with them.
-
-## alternative approach
-
-One alternative way worth considering would be to write a generic adapter to allow any arbitrary apollo-server plugin to be used inside fastify.
-This should be doable and it could be less effort to maintain onwards than having a separate fastify apollo metrics plugin.
