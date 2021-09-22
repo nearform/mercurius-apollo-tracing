@@ -15,22 +15,21 @@ export const sendReport = async (
   app: FastifyInstance
 ) => {
   const gzippedReport = await gzip(Report.encode(report).finish())
+  const url = `${
+    options.endpointUrl || 'https://usage-reporting.api.apollographql.com'
+  }/api/ingress/traces`
+  app.log.info(`Sending report to ${url}`)
 
-  const res = await request(
-    `${
-      options.endpointUrl || 'https://usage-reporting.api.apollographql.com'
-    }/api/ingress/traces`,
-    {
-      method: 'POST',
-      headers: {
-        'user-agent': 'ApolloServerPluginUsageReporting',
-        'x-api-key': options.apiKey,
-        accept: 'application/json',
-        'content-encoding': 'gzip'
-      },
-      body: gzippedReport
-    }
-  )
+  const res = await request(url, {
+    method: 'POST',
+    headers: {
+      'user-agent': 'ApolloServerPluginUsageReporting',
+      'x-api-key': options.apiKey,
+      accept: 'application/json',
+      'content-encoding': 'gzip'
+    },
+    body: gzippedReport
+  })
 
   if (res.statusCode >= 400) {
     try {

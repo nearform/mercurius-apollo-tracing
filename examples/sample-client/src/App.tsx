@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 
-import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client'
+import { ApolloClient, InMemoryCache, HttpLink, gql } from '@apollo/client'
 import { createPersistedQueryLink } from '@apollo/client/link/persisted-queries'
 import { sha256 } from 'crypto-hash'
 
 const linkChain = createPersistedQueryLink({ sha256 }).concat(
-  new HttpLink({ uri: 'http://localhost:4000/graphql' })
+  new HttpLink({ uri: 'http://localhost:3434/graphql' })
 )
 
 const client = new ApolloClient({
@@ -19,14 +19,28 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <p>Hello Vite + React!</p>
+        <p>Click to call a persisted query</p>
         <p>
-          <button type="button" onClick={() => setCount((count) => count + 1)}>
-            count is: {count}
+          <button
+            type="button"
+            onClick={() => {
+              client
+                .query({
+                  query: gql`
+                    query testPersistedQuery {
+                      throwErr
+                      post {
+                        body
+                      }
+                    }
+                  `
+                })
+                .then((result) => console.log(result))
+              setCount(count + 1)
+            }}
+          >
+            clicked {count} times
           </button>
-        </p>
-        <p>
-          Edit <code>App.tsx</code> and save to test HMR updates.
         </p>
       </header>
     </div>
