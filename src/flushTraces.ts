@@ -45,7 +45,10 @@ export function flushTraces(
 
     return res
   }
-  const interval = setInterval(flushTracingNow, opts.flushInterval ?? 10000)
+  const interval = setInterval(
+    flushTracingNow,
+    opts.reportIntervalMs ?? 10 * 1000
+  )
   interval.unref()
   app.addHook('onClose', (_instance, done) => {
     clearInterval(interval)

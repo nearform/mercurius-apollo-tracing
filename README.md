@@ -47,8 +47,8 @@ await app.flushApolloTracing()
 - `apiKey: string`
 - `sendReportsImmediately?: true`
   - useful for lambda-like environment where the whole process exits right after serving the GQL request
-- `flushInterval?: number`
-  - 20000 is the default value
+- `reportIntervalMs?: number`
+  - 10000 is the default value
 
 ## Performance
 

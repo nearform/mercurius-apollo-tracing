@@ -23,7 +23,7 @@ export type MercuriusApolloTracingOptions = {
   /**
    * flush interval in milliseconds
    */
-  flushInterval?: number
+  reportIntervalMs?: number
 }
 
 declare module 'fastify' {
