@@ -5,6 +5,7 @@ import { ReportHeader, Trace } from 'apollo-reporting-protobuf'
 import { computeCoreSchemaHash } from 'apollo-server-core/dist/plugin/schemaReporting'
 import { OurReport } from 'apollo-server-core/dist/plugin/usageReporting/stats'
 import { GraphQLSchema, printSchema } from 'graphql'
+import { ResponseData } from 'undici/types/dispatcher'
 
 import { ApolloTraceBuilder, dateToProtoTimestamp } from './ApolloTraceBuilder'
 import { sendReport } from './sendReport'
@@ -31,11 +32,17 @@ export function flushTraces(
     for (const traceBuilder of traceBuilders) {
       addTraceToReportAndFinishTiming(traceBuilder, report)
     }
-
-    const res = await sendReport(report, opts, app)
-    app.log.info(`${tracesCount} apollo traces report sent`)
-
     traceBuilders.length = 0
+
+    let res: ResponseData | null = null
+    try {
+      res = await sendReport(report, opts, app)
+      app.log.info(`${tracesCount} apollo traces report sent`)
+    } catch (err) {
+      app.log.info(`${tracesCount} apollo traces failed to send`)
+      app.log.error(err)
+    }
+
     return res
   }
   const interval = setInterval(flushTracingNow, opts.flushInterval ?? 10000)
