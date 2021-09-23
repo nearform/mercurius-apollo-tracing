@@ -3,3 +3,4 @@
 
 npm run pretty-quick
 npx lint-staged
+npx --no-install commitlint --edit "$1"
