@@ -13,7 +13,8 @@ app.register(require('fastify-cors')) // you need this if you want to be able to
 app.register(mercurius, {
   schema: basicSchema,
   resolvers: basicResolvers,
-  graphiql: true
+  graphiql: true,
+  persistedQueryProvider: mercurius.persistedQueryDefaults.automatic()
 })
 
 const apiKey: string = process.env.APOLLO_KEY as string

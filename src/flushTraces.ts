@@ -5,6 +5,7 @@ import { ReportHeader, Trace } from 'apollo-reporting-protobuf'
 import { computeCoreSchemaHash } from 'apollo-server-core/dist/plugin/schemaReporting'
 import { OurReport } from 'apollo-server-core/dist/plugin/usageReporting/stats'
 import { GraphQLSchema, printSchema } from 'graphql'
+import { ResponseData } from 'undici/types/dispatcher'
 
 import { ApolloTraceBuilder, dateToProtoTimestamp } from './ApolloTraceBuilder'
 import { sendReport } from './sendReport'
@@ -19,7 +20,7 @@ export function flushTraces(
   traceBuilders: ApolloTraceBuilder[],
   opts: MercuriusApolloTracingOptions
 ) {
-  const interval = setInterval(() => {
+  const flushTracingNow = async () => {
     if (traceBuilders.length === 0) {
       return
     }
@@ -31,18 +32,30 @@ export function flushTraces(
     for (const traceBuilder of traceBuilders) {
       addTraceToReportAndFinishTiming(traceBuilder, report)
     }
+    traceBuilders.length = 0
 
-    sendReport(report, opts, app).then(() => {
+    let res: ResponseData | null = null
+    try {
+      res = await sendReport(report, opts, app)
       app.log.info(`${tracesCount} apollo traces report sent`)
-    })
+    } catch (err) {
+      app.log.info(`${tracesCount} apollo traces failed to send`)
+      app.log.error(err)
+    }
 
-    traceBuilders.length = 0 // clear the array
-  }, opts.flushInterval ?? 10000)
+    return res
+  }
+  const interval = setInterval(
+    flushTracingNow,
+    opts.reportIntervalMs ?? 10 * 1000
+  )
   interval.unref()
   app.addHook('onClose', (_instance, done) => {
     clearInterval(interval)
     done()
   })
+
+  app.decorate('flushApolloTracing', flushTracingNow)
 }
 
 export function addTraceToReportAndFinishTiming(

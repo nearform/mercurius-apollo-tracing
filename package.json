@@ -7,7 +7,7 @@
   "scripts": {
     "prepare": "tsc && husky install",
     "build": "tsc",
-    "test": "tap --ts --no-check-coverage",
+    "test": "NODE_ENV=test tap --ts --no-check-coverage --jobs=1",
     "pretty-quick": "pretty-quick --staged",
     "lint": "eslint",
     "example": "nodemon --watch './**/*.ts' --exec 'ts-node' ./examples/basic.ts"
@@ -22,40 +22,40 @@
   ],
   "devDependencies": {
     "@types/faker": "^5.5.8",
-    "@types/node": "^16.7.1",
-    "@types/sinon": "^10.0.2",
+    "@types/node": "^16.9.6",
+    "@types/sinon": "^10.0.3",
     "@types/tap": "^15.0.5",
-    "@typescript-eslint/parser": "^4.29.3",
+    "@typescript-eslint/parser": "^4.31.2",
     "dotenv": "^10.0.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-import": "^2.24.2",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^3.4.1",
+    "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-standard": "^5.0.0",
     "faker": "^5.5.3",
-    "fastify": "^3.21.0",
+    "fastify": "^3.21.3",
     "fastify-cors": "^6.0.2",
-    "graphql": "^15.5.3",
+    "graphql": "^15.6.0",
     "husky": "^7.0.2",
-    "mercurius": "^8.2.1",
+    "mercurius": "^8.3.0",
     "nodemon": "^2.0.12",
-    "prettier": "^2.3.2",
+    "prettier": "^2.4.1",
     "pretty-quick": "^3.1.1",
     "sinon": "^11.1.2",
-    "tap": "^15.0.9",
+    "tap": "^15.0.10",
     "ts-node": "^10.2.1",
-    "typescript": "^4.3.5"
+    "typescript": "^4.4.3"
   },
   "dependencies": {
     "apollo-graphql": "^0.9.3",
     "apollo-reporting-protobuf": "^3.0.0",
-    "apollo-server-core": "^3.2.0",
+    "apollo-server-core": "^3.3.0",
     "apollo-server-types": "^3.2.0",
     "fastify-plugin": "^3.0.0",
-    "undici": "^4.4.7"
+    "undici": "^4.7.0"
   },
   "engines": {
     "node": ">= 14"

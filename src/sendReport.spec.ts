@@ -1,6 +1,3 @@
-import http from 'http'
-import zlib from 'zlib'
-
 import { Report } from 'apollo-reporting-protobuf'
 import tap from 'tap'
 import {
@@ -10,8 +7,10 @@ import {
   Dispatcher
 } from 'undici'
 import sinon from 'sinon'
+import { FastifyInstance } from 'fastify'
 
 import { sendReport } from './sendReport'
+import { createSimpleServer } from './createSimpleServer'
 
 const fakeReport = {
   header: {
@@ -27,24 +26,19 @@ const fakeReport = {
   }
 }
 
-tap.test('sendReport encodes the report', async (t) => {
-  const requestListener = function (req, res) {
-    const chunks: any[] = []
-    req.on('data', (chunk: any) => chunks.push(chunk))
-    req.on('end', () => {
-      const data = Buffer.concat(chunks)
-
-      const unzippedData = zlib.unzipSync(data)
-
-      const reportDecoded = Report.decode(unzippedData)
-      t.same(reportDecoded, fakeReport)
-    })
-    res.writeHead(200)
-    res.end()
+const logErrorSpy = sinon.spy()
+const fakeFastifyInstance = {
+  log: {
+    error: logErrorSpy,
+    info: sinon.spy()
   }
+} as any as FastifyInstance
 
-  const server = http.createServer(requestListener)
-  server.listen(3334)
+tap.test('sendReport encodes the report', async (t) => {
+  const server = createSimpleServer((unzippedData) => {
+    const reportDecoded = Report.decode(unzippedData)
+    t.same(reportDecoded, fakeReport)
+  })
 
   const res = await sendReport(
     fakeReport,
@@ -53,7 +47,7 @@ tap.test('sendReport encodes the report', async (t) => {
       apiKey: 'fakeKey',
       graphRef: 'myGraph@current'
     },
-    {} as any
+    fakeFastifyInstance
   )
 
   t.equal(res.statusCode, 200)
@@ -77,6 +71,7 @@ tap.test('with mocked http', async (t) => {
     agent.enableNetConnect()
     setGlobalDispatcher(originalDispatcher)
   })
+
   t.test('sendReport success', async (tt) => {
     agent
       .get(endpointUrl)
@@ -93,7 +88,7 @@ tap.test('with mocked http', async (t) => {
         apiKey: 'fakeKey',
         graphRef: 'myGraph@current'
       },
-      {} as any
+      fakeFastifyInstance
     )
     return tt.equal(res.statusCode, 200)
   })
@@ -106,7 +101,6 @@ tap.test('with mocked http', async (t) => {
       })
       .reply(400, 'something went wrong')
 
-    const logErrorSpy = sinon.spy()
     const res = await sendReport(
       fakeReport,
       {
@@ -114,11 +108,7 @@ tap.test('with mocked http', async (t) => {
         apiKey: 'fakeKey',
         graphRef: 'myGraph@current'
       },
-      {
-        log: {
-          error: logErrorSpy
-        }
-      } as any
+      fakeFastifyInstance
     )
     tt.equal(res.statusCode, 400)
     return tt.equal(logErrorSpy.called, true)
