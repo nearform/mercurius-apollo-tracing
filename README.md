@@ -18,11 +18,12 @@ plugin can be registered like this:
 import mercuriusMetrics from 'mercurius-apollo-tracing'
 
 app.register(require('fastify-cors')) // you need this if you want to be able to add the server to apollo studio and get introspection working in the modal for adding new graph
+
 app.register(mercurius, {
   schema,
   resolvers,
   graphiql: true
-})
+}) // must be done before registering mercuriusMetrics
 
 app.register(mercuriusMetrics, {
   apiKey: 'your:Api:Key', // replace 'your:Api:Key' with the one from apollo studio
