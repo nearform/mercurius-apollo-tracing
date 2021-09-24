@@ -5,9 +5,9 @@ Fastify plugin to be used with [Mercurius](https://mercurius.dev) to collect per
 ## Install
 
 ```sh
-npm i mercurius-apollo-tracing -S
+npm i mercurius-apollo-tracing
 # yarn
-yarn add mercurius-apollo-tracing -S
+yarn add mercurius-apollo-tracing
 ```
 
 ## Usage
@@ -16,7 +16,7 @@ plugin can be registered like this:
 
 ```ts
 import mercuriusMetrics from 'mercurius-apollo-tracing'
-
+const app = fastify()
 app.register(require('fastify-cors')) // you need this if you want to be able to add the server to apollo studio and get introspection working in the modal for adding new graph
 
 app.register(mercurius, {
@@ -31,14 +31,14 @@ app.register(mercuriusMetrics, {
 })
 ```
 
-If you are running in lambda, keep in mind to pass `sendReportsImmediately: true` flag.
+If you are running in lambda, keep in mind to pass `sendReportsImmediately: true` flag to registration options.
 
 ## Manual flush
 
 You can flush traces manually at any time by :
 
 ```js
-await app.flushApolloTracing()
+app.flushApolloTracing()
 ```
 
 ## All options
