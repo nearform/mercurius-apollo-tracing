@@ -14,7 +14,7 @@ plugin can be registered like this:
 
 ```js
 const fastify = require('fastify')
-const mercuriusMetrics = require('mercurius-apollo-tracing')
+const mercuriusTracing = require('mercurius-apollo-tracing')
 const app = fastify()
 
 // you need this if you want to be able to add the server to apollo studio
@@ -25,9 +25,9 @@ app.register(mercurius, {
   schema,
   resolvers,
   graphiql: true
-}) // must be done before registering mercuriusMetrics
+}) // must be done before registering mercuriusTracing
 
-app.register(mercuriusMetrics, {
+app.register(mercuriusTracing, {
   apiKey: 'your:Api:Key', // replace 'your:Api:Key' with the one from apollo studio
   graphRef: 'yourGraph@ref' // replace 'yourGraph@ref'' with the one from apollo studio
 })
@@ -43,7 +43,7 @@ You can flush traces manually at any time by :
 app.flushApolloTracing()
 ```
 
-## All options
+## Options
 
 - `endpointUrl?: string`
 - `graphRef: string`
