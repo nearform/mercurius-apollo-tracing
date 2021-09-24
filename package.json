@@ -23,6 +23,21 @@
       "url": "http://www.apache.org/licenses/LICENSE-2.0"
     }
   ],
+  "keywords": [
+    "fastify",
+    "fastify-plugin",
+    "plugin",
+    "apollo",
+    "apollo-tracing",
+    "tracing",
+    "graphql",
+    "mercurius"
+  ],
+  "peerDependencies": {
+    "fastify": "3.x",
+    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0",
+    "mercurius": "8.x"
+  },
   "devDependencies": {
     "@commitlint/cli": "^13.1.0",
     "@commitlint/config-conventional": "^13.1.0",
