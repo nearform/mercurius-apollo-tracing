@@ -6,18 +6,20 @@ Fastify plugin to be used with [Mercurius](https://mercurius.dev) to collect per
 
 ```sh
 npm i mercurius-apollo-tracing
-# yarn
-yarn add mercurius-apollo-tracing
 ```
 
 ## Usage
 
 plugin can be registered like this:
 
-```ts
-import mercuriusMetrics from 'mercurius-apollo-tracing'
+```js
+const fastify = require('fastify')
+const mercuriusMetrics = require('mercurius-apollo-tracing')
 const app = fastify()
-app.register(require('fastify-cors')) // you need this if you want to be able to add the server to apollo studio and get introspection working in the modal for adding new graph
+
+// you need this if you want to be able to add the server to apollo studio
+// they ping your server directly from the browser
+app.register(require('fastify-cors'))
 
 app.register(mercurius, {
   schema,
@@ -31,9 +33,9 @@ app.register(mercuriusMetrics, {
 })
 ```
 
-If you are running in lambda, keep in mind to pass `sendReportsImmediately: true` flag to registration options.
+## API
 
-## Manual flush
+### Manual flush
 
 You can flush traces manually at any time by :
 
@@ -51,6 +53,10 @@ app.flushApolloTracing()
 - `reportIntervalMs?: number`
   - 10000 is the default value
 
+## Lambda
+
+If you are running in lambda-like environment, keep in mind to pass `sendReportsImmediately: true` flag to registration options to make sure the report is send before process exits.
+
 ## Performance
 
 Plugin hooks into each resolver in your schema, so performance will be negatively affected. Performance will be impacted more if you have many fast/small resolvers. If you have less resolvers and it takes more time to resolve them, perf difference is lower.
@@ -66,7 +72,3 @@ Ran on Ubuntu 21.04, Node 16.7.0 and AMD Ryzen 5900x.
 ## Persisted queries
 
 Yes this plugin works fine with them.
-
-## License
-
-Copyright NearForm Ltd 2021. Licensed under the [Apache-2.0 license](http://www.apache.org/licenses/LICENSE-2.0).
