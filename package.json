@@ -4,7 +4,10 @@
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "repository": "git+https://github.com/nearform/mercurius-apollo-tracing",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nearform/mercurius-apollo-tracing"
+  },
   "scripts": {
     "prepare": "tsc && husky install",
     "build": "tsc",
