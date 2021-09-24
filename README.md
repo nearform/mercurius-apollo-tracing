@@ -5,42 +5,45 @@ Fastify plugin to be used with [Mercurius](https://mercurius.dev) to collect per
 ## Install
 
 ```sh
-npm i mercurius-apollo-tracing -S
-# yarn
-yarn add mercurius-apollo-tracing -S
+npm i mercurius-apollo-tracing
 ```
 
 ## Usage
 
 plugin can be registered like this:
 
-```ts
-import mercuriusMetrics from 'mercurius-apollo-tracing'
+```js
+const fastify = require('fastify')
+const mercuriusTracing = require('mercurius-apollo-tracing')
+const app = fastify()
 
-app.register(require('fastify-cors')) // you need this if you want to be able to add the server to apollo studio and get introspection working in the modal for adding new graph
+// you need this if you want to be able to add the server to apollo studio
+// they ping your server directly from the browser
+app.register(require('fastify-cors'))
+
 app.register(mercurius, {
   schema,
   resolvers,
   graphiql: true
-})
+}) // must be done before registering mercuriusTracing
 
-app.register(mercuriusMetrics, {
+app.register(mercuriusTracing, {
   apiKey: 'your:Api:Key', // replace 'your:Api:Key' with the one from apollo studio
   graphRef: 'yourGraph@ref' // replace 'yourGraph@ref'' with the one from apollo studio
 })
 ```
 
-If you are running in lambda, keep in mind to pass `sendReportsImmediately: true` flag.
+## API
 
-## Manual flush
+### Manual flush
 
 You can flush traces manually at any time by :
 
 ```js
-await app.flushApolloTracing()
+app.flushApolloTracing()
 ```
 
-## All options
+## Options
 
 - `endpointUrl?: string`
 - `graphRef: string`
@@ -49,6 +52,10 @@ await app.flushApolloTracing()
   - useful for lambda-like environment where the whole process exits right after serving the GQL request
 - `reportIntervalMs?: number`
   - 10000 is the default value
+
+## Lambda
+
+If you are running in lambda-like environment, keep in mind to pass `sendReportsImmediately: true` flag to registration options to make sure the report is send before process exits.
 
 ## Performance
 
