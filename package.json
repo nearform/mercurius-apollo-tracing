@@ -12,7 +12,6 @@
     "lint": "eslint",
     "example": "nodemon --watch './**/*.ts' --exec 'ts-node' ./examples/basic.ts"
   },
-  "author": "",
   "license": "Apache-2.0",
   "licenses": [
     {
@@ -65,5 +64,9 @@
   },
   "lint-staged": {
     "*.ts": "eslint --cache --fix"
-  }
+  },
+  "contributors": [
+    "Jiří Špác <jiri.spac@nearform.com>",
+    "Andrew Wood <andrew.wood@nearform.com>"
+  ]
 }

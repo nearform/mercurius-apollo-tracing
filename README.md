@@ -65,3 +65,7 @@ Ran on Ubuntu 21.04, Node 16.7.0 and AMD Ryzen 5900x.
 ## Persisted queries
 
 Yes this plugin works fine with them.
+
+## License
+
+Copyright NearForm Ltd 2021. Licensed under the [Apache-2.0 license](http://www.apache.org/licenses/LICENSE-2.0).
