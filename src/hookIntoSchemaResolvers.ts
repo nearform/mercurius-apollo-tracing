@@ -2,7 +2,7 @@ import { GraphQLObjectType, GraphQLSchema } from 'graphql'
 
 import { ApolloTraceBuilder } from './ApolloTraceBuilder'
 
-export function hookIntoSchemaResolvers(schema: GraphQLSchema) {
+export function hookIntoSchemaResolvers(schema: GraphQLSchema): void {
   const schemaTypeMap = schema.getTypeMap()
 
   for (const schemaType of Object.values(schemaTypeMap)) {

@@ -1,6 +1,11 @@
 {
   "parser": "@typescript-eslint/parser",
-  "extends": ["standard", "prettier"],
+  "extends": [
+    "standard",
+    "prettier",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
   "plugins": ["prettier"],
   "env": {
     "browser": false,
@@ -14,6 +19,8 @@
       {
         "newlines-between": "always"
       }
-    ]
-  }
+    ],
+    "@typescript-eslint/no-explicit-any": "off"
+  },
+  "ignorePatterns": ["dist/**", "examples/**"]
 }

@@ -27,15 +27,21 @@ export type MercuriusApolloTracingOptions = {
 }
 
 declare module 'fastify' {
+  interface FastifyInstance {
+    flushApolloTracing: () => Promise<Dispatcher.ResponseData | undefined>
+  }
+
   interface FastifyRegister {
     (
       plugin: FastifyPluginCallback<MercuriusApolloTracingOptions>,
       opts: MercuriusApolloTracingOptions
     ): FastifyInstance
   }
+}
 
-  interface FastifyInstance {
-    flushApolloTracing: () => Promise<Dispatcher.ResponseData | undefined>
+declare module 'mercurius' {
+  interface MercuriusContext {
+    __traceBuilder: ApolloTraceBuilder
   }
 }
 
@@ -56,7 +62,7 @@ export default fp(
         {}
       )
       traceBuilder.startTiming()
-      // @ts-expect-error
+
       context.__traceBuilder = traceBuilder
       return { document }
     })

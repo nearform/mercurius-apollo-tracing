@@ -47,7 +47,7 @@ export class ApolloTraceBuilder {
     this.querySignature = `# -\n${defaultUsageReportingSignature(document, '')}`
   }
 
-  public startTiming() {
+  public startTiming(): void {
     if (this.startHrTime) {
       throw internalError('startTiming called twice!')
     }
@@ -58,7 +58,7 @@ export class ApolloTraceBuilder {
     this.startHrTime = process.hrtime()
   }
 
-  public stopTiming() {
+  public stopTiming(): void {
     if (!this.startHrTime) {
       throw internalError('stopTiming called before startTiming!')
     }
@@ -100,7 +100,7 @@ export class ApolloTraceBuilder {
     }
   }
 
-  public didEncounterErrors(errors: readonly GraphQLError[]) {
+  public didEncounterErrors(errors: readonly GraphQLError[]): void {
     errors.forEach((err) => {
       // This is an error from a federated service. We will already be reporting
       // it in the nested Trace in the query plan.
@@ -182,6 +182,7 @@ export class ApolloTraceBuilder {
     }
     // Because we set up the root path when creating this.nodes, we now know
     // that path.prev isn't undefined.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.newNode(path.prev!)
   }
 

@@ -7,6 +7,8 @@ import { OurReport } from 'apollo-server-core/dist/plugin/usageReporting/stats'
 import { GraphQLSchema, printSchema } from 'graphql'
 import { ResponseData } from 'undici/types/dispatcher'
 
+import pkgJson from '../package.json'
+
 import { ApolloTraceBuilder, dateToProtoTimestamp } from './ApolloTraceBuilder'
 import { sendReport } from './sendReport'
 
@@ -19,7 +21,7 @@ export function flushTraces(
   app: FastifyInstance,
   traceBuilders: ApolloTraceBuilder[],
   opts: MercuriusApolloTracingOptions
-) {
+): void {
   const flushTracingNow = async () => {
     if (traceBuilders.length === 0) {
       return
@@ -61,7 +63,7 @@ export function flushTraces(
 export function addTraceToReportAndFinishTiming(
   traceBuilder: ApolloTraceBuilder,
   report: OurReport
-) {
+): void {
   const { querySignature, trace } = traceBuilder
   trace.http = {
     method: Trace.HTTP.Method.POST
@@ -84,14 +86,12 @@ export function addTraceToReportAndFinishTiming(
 export function prepareReportWithHeaders(
   schema: GraphQLSchema,
   opts: MercuriusApolloTracingOptions
-) {
+): OurReport {
   const schemaHash = computeCoreSchemaHash(printSchema(schema))
 
   const headers: ReportHeader = new ReportHeader({
     hostname: hostname(),
-    agentVersion: `mercurius-apollo-tracing@${
-      require('../package.json').version
-    }`,
+    agentVersion: `mercurius-apollo-tracing@${pkgJson.version}`,
     runtimeVersion: `node ${process.version}`,
     uname: `${os.platform()}, ${os.type()}, ${os.release()}, ${os.arch()}`,
     executableSchemaId: schemaHash,

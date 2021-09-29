@@ -1,7 +1,9 @@
 import http from 'http'
 import zlib from 'zlib'
 
-export function createSimpleServer(onData: (arg0: Buffer) => void) {
+export function createSimpleServer(
+  onData: (arg0: Buffer) => void
+): http.Server {
   const requestListener = function (req, res) {
     const chunks: any[] = []
     req.on('data', (chunk: any) => chunks.push(chunk))

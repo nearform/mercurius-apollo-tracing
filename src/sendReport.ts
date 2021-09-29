@@ -3,7 +3,7 @@ import { promisify } from 'util'
 
 import { IReport, Report } from 'apollo-reporting-protobuf'
 import { FastifyInstance } from 'fastify'
-import { request } from 'undici'
+import { Dispatcher, request } from 'undici'
 
 import { MercuriusApolloTracingOptions } from '.'
 
@@ -13,7 +13,7 @@ export const sendReport = async (
   report: IReport,
   options: MercuriusApolloTracingOptions,
   app: FastifyInstance
-) => {
+): Promise<Dispatcher.ResponseData> => {
   const gzippedReport = await gzip(Report.encode(report).finish())
   const url = `${
     options.endpointUrl || 'https://usage-reporting.api.apollographql.com'
