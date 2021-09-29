@@ -76,6 +76,7 @@
     "apollo-server-core": "^3.3.0",
     "apollo-server-types": "^3.2.0",
     "fastify-plugin": "^3.0.0",
+    "mercurius-apollo-registry": "^1.0.1",
     "undici": "^4.7.0"
   },
   "engines": {

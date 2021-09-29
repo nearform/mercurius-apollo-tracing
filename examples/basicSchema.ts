@@ -8,6 +8,7 @@ export const basicSchema = `
   type Query {
     add(x: Int, y: Int): Int
     word: String
+    words: [String!]
     throwErr: String
     post: Post!
   }
@@ -28,6 +29,9 @@ export const basicResolvers = {
     },
     word() {
       return faker.lorem.word()
+    },
+    words() {
+      return faker.lorem.sentence().split(' ')
     },
     throwErr() {
       throw new Error('sample error')
