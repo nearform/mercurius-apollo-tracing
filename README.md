@@ -60,7 +60,7 @@ If you are running in lambda-like environment, keep in mind to pass `sendReports
 ## Performance
 
 Plugin hooks into each resolver in your schema, so performance will be negatively affected. Performance will be impacted more if you have many fast/small resolvers. If you have less resolvers and it takes more time to resolve them, perf difference is lower.
-We've measured it in the benchmark [here](https://github.com/benawad/node-graphql-benchmarks/blob/4cc68bcf3134056da0ca0ae6af4ef860e948d887/benchmarks/mercurius+graphql-jit.js) and observed slow down of roughly 25 percent. This is still smaller penalty than what you'd get when using apollo-server-fastify though.
+We've measured it in the benchmark [here](https://github.com/benawad/node-graphql-benchmarks/blob/4cc68bcf3134056da0ca0ae6af4ef860e948d887/benchmarks/mercurius+graphql-jit.js) and observed slow down of roughly 25 percent. This is still smaller penalty than compared to running with tracing on apollo-server-fastify.
 Also in real world API where resolvers actually do something the difference will be much smaller though. These were actual results:
 
 | server                            | Without tracing(Requests/s) | With tracing enabled(Requests/s) |
