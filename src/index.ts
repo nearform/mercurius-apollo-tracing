@@ -24,6 +24,10 @@ export type MercuriusApolloTracingOptions = {
    * flush interval in milliseconds
    */
   reportIntervalMs?: number
+  /**
+   * max report size in bytes
+   */
+  maxUncompressedReportSize?: number
 }
 
 declare module 'fastify' {
@@ -36,12 +40,6 @@ declare module 'fastify' {
       plugin: FastifyPluginCallback<MercuriusApolloTracingOptions>,
       opts: MercuriusApolloTracingOptions
     ): FastifyInstance
-  }
-}
-
-declare module 'mercurius' {
-  interface MercuriusContext {
-    __traceBuilder: ApolloTraceBuilder
   }
 }
 
@@ -62,7 +60,7 @@ export default fp(
         {}
       )
       traceBuilder.startTiming()
-
+      // @ts-expect-error property doesn't exist
       context.__traceBuilder = traceBuilder
       return { document }
     })
@@ -90,6 +88,16 @@ export default fp(
         })
       } else {
         traceBuilders.push(traceBuilder)
+        if (
+          JSON.stringify(traceBuilders).replace(/[[\],"]/g, '').length >=
+          (opts.maxUncompressedReportSize || 4 * 1024 * 1024)
+        ) {
+          const report = prepareReportWithHeaders(schema, opts)
+          addTraceToReportAndFinishTiming(traceBuilder, report)
+
+          await sendReport(report, opts, app)
+          flushTraces(app, traceBuilders, opts)
+        }
       }
     })
 
