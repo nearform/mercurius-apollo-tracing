@@ -43,6 +43,12 @@ declare module 'fastify' {
   }
 }
 
+declare module 'mercurius' {
+  interface MercuriusContext {
+    __traceBuilder: ApolloTraceBuilder
+  }
+}
+
 const traceBuilders: ApolloTraceBuilder[] = []
 
 export default fp(
@@ -60,6 +66,7 @@ export default fp(
         {}
       )
       traceBuilder.startTiming()
+
       // @ts-expect-error property doesn't exist
       context.__traceBuilder = traceBuilder
       return { document }
