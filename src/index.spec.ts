@@ -4,11 +4,8 @@ import fp from 'fastify-plugin'
 
 import plugin from './index'
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const noop = () => {}
-
 function makeStubMercurius() {
-  return fp(noop, {
+  return fp(async () => {}, {
     name: 'mercurius'
   })
 }
@@ -24,7 +21,7 @@ tap.test('plugin registration', async (t) => {
           return { type: 'map' }
         }
       },
-      addHook: noop
+      addHook: () => {}
     }
   })
 
