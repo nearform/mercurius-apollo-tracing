@@ -67,7 +67,6 @@ export default fp(
       )
       traceBuilder.startTiming()
 
-      // @ts-expect-error property doesn't exist
       context.__traceBuilder = traceBuilder
       return { document }
     })
