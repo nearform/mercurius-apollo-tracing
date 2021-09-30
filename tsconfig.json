@@ -11,7 +11,6 @@
     "sourceMap": true /* Generates corresponding '.map' file. */,
 
     "outDir": "./dist" /* Redirect output structure to the directory. */,
-    "rootDir": "./src" /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */,
 
     "strict": true /* Enable all strict type-checking options. */,
     "noImplicitAny": false /* Raise error on expressions and declarations with an implied 'any' type. */,
@@ -19,7 +18,7 @@
     "noUnusedLocals": true /* Report errors on unused locals. */,
     "noUnusedParameters": true /* Report errors on unused parameters. */,
     "esModuleInterop": true /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */,
-
+    "resolveJsonModule": true,
     "skipLibCheck": true /* Skip type checking of declaration files. */,
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
   },

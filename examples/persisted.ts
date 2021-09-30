@@ -1,15 +1,17 @@
 import dotenv from 'dotenv'
 import fastify from 'fastify'
 import mercurius from 'mercurius'
+import cors from 'fastify-cors'
 
 import mercuriusMetrics from '../src/index'
+
 import { basicSchema, basicResolvers } from './basicSchema'
 
 dotenv.config()
 
 export const app = fastify({ logger: true })
 
-app.register(require('fastify-cors')) // you need this if you want to be able to add the server to apollo studio and get introspection working in the modal for adding new graph
+app.register(cors) // you need this if you want to be able to add the server to apollo studio and get introspection working in the modal for adding new graph
 app.register(mercurius, {
   schema: basicSchema,
   resolvers: basicResolvers,
