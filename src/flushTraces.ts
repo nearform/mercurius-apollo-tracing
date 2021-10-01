@@ -83,6 +83,10 @@ export function addTraceToReportAndFinishTiming(
   })
 }
 
+export function getTraceSize(trace: ApolloTraceBuilder): number {
+  return JSON.stringify(trace).replace(/[[\],"]/g, '').length
+}
+
 export function prepareReportWithHeaders(
   schema: GraphQLSchema,
   opts: MercuriusApolloTracingOptions
