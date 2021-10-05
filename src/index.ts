@@ -14,6 +14,7 @@ import { hookIntoSchemaResolvers } from './hookIntoSchemaResolvers'
 import { sendReport } from './sendReport'
 
 const DEFAULT_MAX_REP_SIZE = 4 * 1024 * 1024
+const DEFAULT_MAX_REP_TIME = 10 * 1000
 
 export type MercuriusApolloTracingOptions = {
   endpointUrl?: string
@@ -57,6 +58,8 @@ const traceBuilders: ApolloTraceBuilder[] = []
 export default fp(
   async function (app, opts: MercuriusApolloTracingOptions) {
     let firstTraceSize: number
+    let traceBuildersTimer: number = Date.now()
+
     if (!opts.apiKey) {
       throw new Error('an Apollo Studio API key is required')
     }
@@ -103,15 +106,22 @@ export default fp(
           // use size of first trace to estimate report size
           firstTraceSize = getTraceSize(traceBuilder)
         }
-        if (
+
+        const reachedMaxSize: boolean =
           firstTraceSize * traceBuilders.length >=
           (opts.maxUncompressedReportSize || DEFAULT_MAX_REP_SIZE)
-        ) {
+
+        const reachedMaxTime: boolean =
+          Date.now() >=
+          traceBuildersTimer + (opts.reportIntervalMs || DEFAULT_MAX_REP_TIME)
+
+        if (reachedMaxSize || reachedMaxTime) {
           const report = prepareReportWithHeaders(schema, opts)
           addTraceToReportAndFinishTiming(traceBuilder, report)
 
           await sendReport(report, opts, app)
           flushTraces(app, traceBuilders, opts)
+          traceBuildersTimer = Date.now()
         }
       }
     })

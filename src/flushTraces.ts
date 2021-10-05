@@ -47,15 +47,6 @@ export function flushTraces(
 
     return res
   }
-  const interval = setInterval(
-    flushTracingNow,
-    opts.reportIntervalMs ?? 10 * 1000
-  )
-  interval.unref()
-  app.addHook('onClose', (_instance, done) => {
-    clearInterval(interval)
-    done()
-  })
 
   app.decorate('flushApolloTracing', flushTracingNow)
 }
