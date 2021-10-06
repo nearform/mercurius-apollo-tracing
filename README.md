@@ -48,10 +48,9 @@ app.flushApolloTracing()
 - `endpointUrl?: string`
 - `graphRef: string`
 - `apiKey: string`
-- `sendReportsImmediately?: true`
+- `sendReportsImmediately?: boolean` default: `false`
   - useful for lambda-like environment where the whole process exits right after serving the GQL request
-- `reportIntervalMs?: number`
-  - 10000 is the default value
+- `reportIntervalMs?: number` default: `10000`
 
 ## Lambda
 
