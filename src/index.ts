@@ -13,8 +13,8 @@ import {
 import { hookIntoSchemaResolvers } from './hookIntoSchemaResolvers'
 import { sendReport } from './sendReport'
 
-const DEFAULT_MAX_REP_SIZE = 4 * 1024 * 1024
-const DEFAULT_MAX_REP_TIME = 10 * 1000
+const DEFAULT_MAX_REPORT_SIZE = 4 * 1024 * 1024
+const DEFAULT_MAX_REPORT_TIME = 10 * 1000
 
 export type MercuriusApolloTracingOptions = {
   endpointUrl?: string
@@ -109,11 +109,12 @@ export default fp(
 
         const reachedMaxSize: boolean =
           firstTraceSize * traceBuilders.length >=
-          (opts.maxUncompressedReportSize || DEFAULT_MAX_REP_SIZE)
+          (opts.maxUncompressedReportSize || DEFAULT_MAX_REPORT_SIZE)
 
         const reachedMaxTime: boolean =
           Date.now() >=
-          traceBuildersTimer + (opts.reportIntervalMs || DEFAULT_MAX_REP_TIME)
+          traceBuildersTimer +
+            (opts.reportIntervalMs || DEFAULT_MAX_REPORT_TIME)
 
         if (reachedMaxSize || reachedMaxTime) {
           const report = prepareReportWithHeaders(schema, opts)
