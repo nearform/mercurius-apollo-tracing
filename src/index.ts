@@ -1,13 +1,10 @@
 import { FastifyPluginCallback } from 'fastify'
 import fp from 'fastify-plugin'
 import 'mercurius' // needed for types
-import { Dispatcher } from 'undici'
 
 import { ApolloTraceBuilder } from './ApolloTraceBuilder'
 import {
   addTraceToReportAndFinishTiming,
-  runFlushTracesConsumer,
-  getTraceSize,
   prepareReportWithHeaders,
   TraceBuildersStore
 } from './TraceBuildersStore'
@@ -39,7 +36,7 @@ export type MercuriusApolloTracingOptions = {
 
 declare module 'fastify' {
   interface FastifyInstance {
-    flushApolloTracing: () => Promise<Dispatcher.ResponseData | undefined>
+    apolloTracingStore: TraceBuildersStore
   }
 
   interface FastifyRegister {
@@ -77,6 +74,7 @@ export default fp(
     })
 
     const store = new TraceBuildersStore(app, opts)
+    app.decorate('apolloTracingStore', store)
 
     app.graphql.addHook('onResolution', async (execution, context: any) => {
       const traceBuilder: ApolloTraceBuilder = context.__traceBuilder
@@ -111,7 +109,7 @@ export default fp(
     })
 
     if (!opts.sendReportsImmediately) {
-      runFlushTracesConsumer(app, store.traceBuilders, opts)
+      store.runFlushTracesConsumer()
     }
   },
   {

@@ -35,7 +35,7 @@ export class TraceBuildersStore {
   async pushTraceAndFlushIfTooBig(
     traceBuilder: ApolloTraceBuilder
   ): Promise<void> {
-    const { traceBuilders, opts, app } = this
+    const { traceBuilders, opts } = this
     traceBuilders.push(traceBuilder)
 
     if (
@@ -51,21 +51,14 @@ export class TraceBuildersStore {
         byteSize >= (opts.maxUncompressedReportSize || DEFAULT_MAX_REPORT_SIZE)
 
       if (reachedMaxSize) {
-        await app.flushApolloTracing()
+        await this.flushTracingNow()
       }
     }
   }
-}
 
-/**
- * periodically gathers all the traces and sends them to apollo ingress endpoint
- */
-export function runFlushTracesConsumer(
-  app: FastifyInstance,
-  traceBuilders: ApolloTraceBuilder[],
-  opts: MercuriusApolloTracingOptions
-): void {
-  const flushTracingNow = async () => {
+  async flushTracingNow(): Promise<ResponseData | null | undefined> {
+    const { traceBuilders, opts, app } = this
+
     if (traceBuilders.length === 0) {
       return
     }
@@ -91,19 +84,24 @@ export function runFlushTracesConsumer(
     return res
   }
 
-  const interval = setInterval(
-    flushTracingNow,
-    opts.reportIntervalMs ?? DEFAULT_MAX_REPORT_TIME
-  )
-  interval.unref()
-  app.addHook('onClose', (_instance, done) => {
-    clearInterval(interval)
-    done()
-  })
+  runFlushTracesConsumer(): void {
+    const { opts, app } = this
 
-  app.decorate('flushApolloTracing', flushTracingNow)
+    const interval = setInterval(
+      this.flushTracingNow,
+      opts.reportIntervalMs ?? DEFAULT_MAX_REPORT_TIME
+    )
+    interval.unref()
+    app.addHook('onClose', (_instance, done) => {
+      clearInterval(interval)
+      done()
+    })
+  }
 }
 
+/**
+ * periodically gathers all the traces and sends them to apollo ingress endpoint
+ */
 export function addTraceToReportAndFinishTiming(
   traceBuilder: ApolloTraceBuilder,
   report: OurReport
