@@ -14,10 +14,53 @@ import { sendReport } from './sendReport'
 
 import { MercuriusApolloTracingOptions } from './index'
 
+const DEFAULT_MAX_REPORT_SIZE = 4 * 1024 * 1024
+const DEFAULT_MAX_REPORT_TIME = 10 * 1000
+const DEFAULT_CHECK_REPORT_SIZE_REQUEST_COUNT_INTERVAL = 100
+
+export class TraceBuildersStore {
+  app: FastifyInstance
+  opts: MercuriusApolloTracingOptions
+  constructor(app: FastifyInstance, opts: MercuriusApolloTracingOptions) {
+    this.app = app
+    this.opts = opts
+  }
+
+  getByteSize(): number {
+    return JSON.stringify(this.traceBuilders).replace(/[[\],"]/g, '').length
+  }
+
+  traceBuilders: ApolloTraceBuilder[] = []
+
+  async pushTraceAndFlushIfTooBig(
+    traceBuilder: ApolloTraceBuilder
+  ): Promise<void> {
+    const { traceBuilders, opts, app } = this
+    traceBuilders.push(traceBuilder)
+
+    if (
+      // we don't need to check size after each request. Usually one trace is between 1k and 2k, so even doing it every 1000th request would be sufficient in most cases
+      traceBuilders.length %
+        (opts.checkReportSizeRequestCountInterval ??
+          DEFAULT_CHECK_REPORT_SIZE_REQUEST_COUNT_INTERVAL) ===
+      0
+    ) {
+      const byteSize = this.getByteSize()
+
+      const reachedMaxSize: boolean =
+        byteSize >= (opts.maxUncompressedReportSize || DEFAULT_MAX_REPORT_SIZE)
+
+      if (reachedMaxSize) {
+        await app.flushApolloTracing()
+      }
+    }
+  }
+}
+
 /**
  * periodically gathers all the traces and sends them to apollo ingress endpoint
  */
-export function flushTraces(
+export function runFlushTracesConsumer(
   app: FastifyInstance,
   traceBuilders: ApolloTraceBuilder[],
   opts: MercuriusApolloTracingOptions
@@ -47,6 +90,16 @@ export function flushTraces(
 
     return res
   }
+
+  const interval = setInterval(
+    flushTracingNow,
+    opts.reportIntervalMs ?? DEFAULT_MAX_REPORT_TIME
+  )
+  interval.unref()
+  app.addHook('onClose', (_instance, done) => {
+    clearInterval(interval)
+    done()
+  })
 
   app.decorate('flushApolloTracing', flushTracingNow)
 }

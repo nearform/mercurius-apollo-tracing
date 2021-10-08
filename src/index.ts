@@ -6,15 +6,13 @@ import { Dispatcher } from 'undici'
 import { ApolloTraceBuilder } from './ApolloTraceBuilder'
 import {
   addTraceToReportAndFinishTiming,
-  flushTraces,
+  runFlushTracesConsumer,
   getTraceSize,
-  prepareReportWithHeaders
-} from './flushTraces'
+  prepareReportWithHeaders,
+  TraceBuildersStore
+} from './TraceBuildersStore'
 import { hookIntoSchemaResolvers } from './hookIntoSchemaResolvers'
 import { sendReport } from './sendReport'
-
-const DEFAULT_MAX_REPORT_SIZE = 4 * 1024 * 1024
-const DEFAULT_MAX_REPORT_TIME = 10 * 1000
 
 export type MercuriusApolloTracingOptions = {
   endpointUrl?: string
@@ -32,6 +30,11 @@ export type MercuriusApolloTracingOptions = {
    * max report size in bytes
    */
   maxUncompressedReportSize?: number
+
+  /**
+   * this allows to tweak how often plugin checks the size of the payload for apollo-studio ingress endpoint
+   */
+  checkReportSizeRequestCountInterval?: number
 }
 
 declare module 'fastify' {
@@ -53,13 +56,8 @@ declare module 'mercurius' {
   }
 }
 
-const traceBuilders: ApolloTraceBuilder[] = []
-
 export default fp(
   async function (app, opts: MercuriusApolloTracingOptions) {
-    let firstTraceSize: number
-    let traceBuildersTimer: number = Date.now()
-
     if (!opts.apiKey) {
       throw new Error('an Apollo Studio API key is required')
     }
@@ -78,6 +76,8 @@ export default fp(
       return { document }
     })
 
+    const store = new TraceBuildersStore(app, opts)
+
     app.graphql.addHook('onResolution', async (execution, context: any) => {
       const traceBuilder: ApolloTraceBuilder = context.__traceBuilder
 
@@ -93,6 +93,8 @@ export default fp(
 
       const schema = app.graphql.schema
       if (opts.sendReportsImmediately) {
+        // avoid blocking the hook execution as the hook is awaited in mercurius
+
         setImmediate(() => {
           const report = prepareReportWithHeaders(schema, opts)
           addTraceToReportAndFinishTiming(traceBuilder, report)
@@ -100,35 +102,16 @@ export default fp(
           sendReport(report, opts, app)
         })
       } else {
-        traceBuilders.push(traceBuilder)
+        // avoid blocking the hook execution as the hook is awaited in mercurius
 
-        if (!firstTraceSize && traceBuilders.length === 1) {
-          // use size of first trace to estimate report size
-          firstTraceSize = getTraceSize(traceBuilder)
-        }
-
-        const reachedMaxSize: boolean =
-          firstTraceSize * traceBuilders.length >=
-          (opts.maxUncompressedReportSize || DEFAULT_MAX_REPORT_SIZE)
-
-        const reachedMaxTime: boolean =
-          Date.now() >=
-          traceBuildersTimer +
-            (opts.reportIntervalMs || DEFAULT_MAX_REPORT_TIME)
-
-        if (reachedMaxSize || reachedMaxTime) {
-          const report = prepareReportWithHeaders(schema, opts)
-          addTraceToReportAndFinishTiming(traceBuilder, report)
-
-          await sendReport(report, opts, app)
-          flushTraces(app, traceBuilders, opts)
-          traceBuildersTimer = Date.now()
-        }
+        setImmediate(() => {
+          store.pushTraceAndFlushIfTooBig(traceBuilder)
+        })
       }
     })
 
     if (!opts.sendReportsImmediately) {
-      flushTraces(app, traceBuilders, opts)
+      runFlushTracesConsumer(app, store.traceBuilders, opts)
     }
   },
   {
