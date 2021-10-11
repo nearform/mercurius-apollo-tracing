@@ -59,7 +59,7 @@ tap.test(
 
     t.matchSnapshot(JSON.parse(response.payload).errors)
 
-    await app.apolloTracingStore.flushTracingNow()
+    await app.apolloTracingStore.flushTracing()
 
     server.close()
 

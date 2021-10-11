@@ -40,7 +40,7 @@ app.register(mercuriusTracing, {
 You can flush traces manually at any time by :
 
 ```js
-app.apolloTracingStore.flushTracingNow()
+app.apolloTracingStore.flushTracing()
 ```
 
 ## Options
