@@ -27,7 +27,9 @@ export class TraceBuildersStore {
   }
 
   getByteSize(): number {
-    return JSON.stringify(this.traceBuilders).replace(/[[\],"]/g, '').length
+    const serialized = JSON.stringify(this.traceBuilders)
+    // from apollo-server core https://github.com/apollographql/apollo-server/blob/45be2704be5498595bd7a24ca7f330e59f628e3c/packages/apollo-server-core/src/plugin/usageReporting/stats.ts#L349
+    return 2 + Buffer.byteLength(serialized)
   }
 
   traceBuilders: ApolloTraceBuilder[] = []
@@ -51,12 +53,12 @@ export class TraceBuildersStore {
         byteSize >= (opts.maxUncompressedReportSize || DEFAULT_MAX_REPORT_SIZE)
 
       if (reachedMaxSize) {
-        await this.flushTracingNow()
+        await this.flushTracing()
       }
     }
   }
 
-  async flushTracingNow(): Promise<ResponseData | null | undefined> {
+  async flushTracing(): Promise<ResponseData | null | undefined> {
     const { traceBuilders, opts, app } = this
 
     if (traceBuilders.length === 0) {
@@ -75,9 +77,9 @@ export class TraceBuildersStore {
     let res: ResponseData | null = null
     try {
       res = await sendReport(report, opts, app)
-      app.log.info(`${tracesCount} apollo traces report sent`)
+      app.log.debug(`${tracesCount} apollo traces report sent`)
     } catch (err) {
-      app.log.info(`${tracesCount} apollo traces failed to send`)
+      app.log.debug(`${tracesCount} apollo traces failed to send`)
       app.log.error(err)
     }
 
@@ -88,7 +90,7 @@ export class TraceBuildersStore {
     const { opts, app } = this
 
     const interval = setInterval(
-      this.flushTracingNow,
+      this.flushTracing,
       opts.reportIntervalMs ?? DEFAULT_MAX_REPORT_TIME
     )
     interval.unref()
@@ -123,10 +125,6 @@ export function addTraceToReportAndFinishTiming(
     asTrace: true,
     includeTracesContributingToStats: false
   })
-}
-
-export function getTraceSize(trace: ApolloTraceBuilder): number {
-  return JSON.stringify(trace).replace(/[[\],"]/g, '').length
 }
 
 export function prepareReportWithHeaders(

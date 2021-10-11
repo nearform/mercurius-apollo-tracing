@@ -3,13 +3,8 @@ import fp from 'fastify-plugin'
 import 'mercurius' // needed for types
 
 import { ApolloTraceBuilder } from './ApolloTraceBuilder'
-import {
-  addTraceToReportAndFinishTiming,
-  prepareReportWithHeaders,
-  TraceBuildersStore
-} from './TraceBuildersStore'
+import { TraceBuildersStore } from './TraceBuildersStore'
 import { hookIntoSchemaResolvers } from './hookIntoSchemaResolvers'
-import { sendReport } from './sendReport'
 
 export type MercuriusApolloTracingOptions = {
   endpointUrl?: string
@@ -89,16 +84,9 @@ export default fp(
 
       traceBuilder.stopTiming()
 
-      const schema = app.graphql.schema
       if (opts.sendReportsImmediately) {
-        // avoid blocking the hook execution as the hook is awaited in mercurius
-
-        setImmediate(() => {
-          const report = prepareReportWithHeaders(schema, opts)
-          addTraceToReportAndFinishTiming(traceBuilder, report)
-
-          sendReport(report, opts, app)
-        })
+        store.traceBuilders.push(traceBuilder)
+        store.flushTracing()
       } else {
         // avoid blocking the hook execution as the hook is awaited in mercurius
 
