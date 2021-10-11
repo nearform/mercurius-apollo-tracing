@@ -54,7 +54,7 @@ app.apolloTracingStore.flushTracing()
 - `maxUncompressedReportSize?: number` default: `4194304` maximum size of the payload in bytes
   - apollo studio ingress endpoint might not be able to handle bigger payloads, so we recommend tweaking this option carefully
 - `checkReportSizeRequestCountInterval?: number` default: `100`
-  - defines how often the size of the metrics payload is checked. Lower value means more frequent byte size checks are performed on the traces awaiting to be sent.
+  - defines how often the size of the metrics payload is checked in number of GQL requests. Lower value means more frequent byte size checks are performed on the traces awaiting to be sent.
 
 ## Lambda
 
