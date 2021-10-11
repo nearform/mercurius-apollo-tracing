@@ -21,7 +21,9 @@ const apiKey: string = process.env.APOLLO_KEY as string
 
 app.register(mercuriusMetrics, {
   apiKey,
-  graphRef: process.env.APOLLO_GRAPH_ID + '@' + process.env.APOLLO_GRAPH_VARIANT
+  graphRef:
+    process.env.APOLLO_GRAPH_ID + '@' + process.env.APOLLO_GRAPH_VARIANT,
+  checkReportSizeRequestCountInterval: 1
   // sendReportsImmediately: true // this is for lambda-like execution model
 })
 

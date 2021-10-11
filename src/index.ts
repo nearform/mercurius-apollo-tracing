@@ -1,16 +1,10 @@
 import { FastifyPluginCallback } from 'fastify'
 import fp from 'fastify-plugin'
 import 'mercurius' // needed for types
-import { Dispatcher } from 'undici'
 
 import { ApolloTraceBuilder } from './ApolloTraceBuilder'
-import {
-  addTraceToReportAndFinishTiming,
-  flushTraces,
-  prepareReportWithHeaders
-} from './flushTraces'
+import { TraceBuildersStore } from './TraceBuildersStore'
 import { hookIntoSchemaResolvers } from './hookIntoSchemaResolvers'
-import { sendReport } from './sendReport'
 
 export type MercuriusApolloTracingOptions = {
   endpointUrl?: string
@@ -24,11 +18,20 @@ export type MercuriusApolloTracingOptions = {
    * flush interval in milliseconds
    */
   reportIntervalMs?: number
+  /**
+   * max report size in bytes
+   */
+  maxUncompressedReportSize?: number
+
+  /**
+   * this allows to tweak how often plugin checks the size of the payload for apollo-studio ingress endpoint
+   */
+  checkReportSizeRequestCountInterval?: number
 }
 
 declare module 'fastify' {
   interface FastifyInstance {
-    flushApolloTracing: () => Promise<Dispatcher.ResponseData | undefined>
+    apolloTracingStore: TraceBuildersStore
   }
 
   interface FastifyRegister {
@@ -44,8 +47,6 @@ declare module 'mercurius' {
     __traceBuilder: ApolloTraceBuilder
   }
 }
-
-const traceBuilders: ApolloTraceBuilder[] = []
 
 export default fp(
   async function (app, opts: MercuriusApolloTracingOptions) {
@@ -67,6 +68,9 @@ export default fp(
       return { document }
     })
 
+    const store = new TraceBuildersStore(app, opts)
+    app.decorate('apolloTracingStore', store)
+
     app.graphql.addHook('onResolution', async (execution, context: any) => {
       const traceBuilder: ApolloTraceBuilder = context.__traceBuilder
 
@@ -80,21 +84,20 @@ export default fp(
 
       traceBuilder.stopTiming()
 
-      const schema = app.graphql.schema
       if (opts.sendReportsImmediately) {
-        setImmediate(() => {
-          const report = prepareReportWithHeaders(schema, opts)
-          addTraceToReportAndFinishTiming(traceBuilder, report)
-
-          sendReport(report, opts, app)
-        })
+        store.traceBuilders.push(traceBuilder)
+        store.flushTracing()
       } else {
-        traceBuilders.push(traceBuilder)
+        // avoid blocking the hook execution as the hook is awaited in mercurius
+
+        setImmediate(() => {
+          store.pushTraceAndFlushIfTooBig(traceBuilder)
+        })
       }
     })
 
     if (!opts.sendReportsImmediately) {
-      flushTraces(app, traceBuilders, opts)
+      store.runFlushTracesConsumer()
     }
   },
   {

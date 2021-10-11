@@ -40,7 +40,7 @@ app.register(mercuriusTracing, {
 You can flush traces manually at any time by :
 
 ```js
-app.flushApolloTracing()
+app.apolloTracingStore.flushTracing()
 ```
 
 ## Options
@@ -51,6 +51,10 @@ app.flushApolloTracing()
 - `sendReportsImmediately?: boolean` default: `false`
   - useful for lambda-like environment where the whole process exits right after serving the GQL request
 - `reportIntervalMs?: number` default: `10000`
+- `maxUncompressedReportSize?: number` default: `4194304` maximum size of the payload in bytes
+  - apollo studio ingress endpoint might not be able to handle bigger payloads, so we recommend tweaking this option carefully
+- `checkReportSizeRequestCountInterval?: number` default: `100`
+  - defines how often the size of the metrics payload is checked in number of GQL requests. Lower value means more frequent byte size checks are performed on the traces awaiting to be sent.
 
 ## Lambda
 

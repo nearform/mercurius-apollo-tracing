@@ -14,15 +14,53 @@ import { sendReport } from './sendReport'
 
 import { MercuriusApolloTracingOptions } from './index'
 
-/**
- * periodically gathers all the traces and sends them to apollo ingress endpoint
- */
-export function flushTraces(
-  app: FastifyInstance,
-  traceBuilders: ApolloTraceBuilder[],
+const DEFAULT_MAX_REPORT_SIZE = 4 * 1024 * 1024
+const DEFAULT_MAX_REPORT_TIME = 10 * 1000
+const DEFAULT_CHECK_REPORT_SIZE_REQUEST_COUNT_INTERVAL = 100
+
+export class TraceBuildersStore {
+  app: FastifyInstance
   opts: MercuriusApolloTracingOptions
-): void {
-  const flushTracingNow = async () => {
+  constructor(app: FastifyInstance, opts: MercuriusApolloTracingOptions) {
+    this.app = app
+    this.opts = opts
+  }
+
+  getByteSize(): number {
+    const serialized = JSON.stringify(this.traceBuilders)
+    // from apollo-server core https://github.com/apollographql/apollo-server/blob/45be2704be5498595bd7a24ca7f330e59f628e3c/packages/apollo-server-core/src/plugin/usageReporting/stats.ts#L349
+    return 2 + Buffer.byteLength(serialized)
+  }
+
+  traceBuilders: ApolloTraceBuilder[] = []
+
+  async pushTraceAndFlushIfTooBig(
+    traceBuilder: ApolloTraceBuilder
+  ): Promise<void> {
+    const { traceBuilders, opts } = this
+    traceBuilders.push(traceBuilder)
+
+    if (
+      // we don't need to check size after each request. Usually one trace is between 1k and 2k, so even doing it every 1000th request would be sufficient in most cases
+      traceBuilders.length %
+        (opts.checkReportSizeRequestCountInterval ??
+          DEFAULT_CHECK_REPORT_SIZE_REQUEST_COUNT_INTERVAL) ===
+      0
+    ) {
+      const byteSize = this.getByteSize()
+
+      const reachedMaxSize: boolean =
+        byteSize >= (opts.maxUncompressedReportSize || DEFAULT_MAX_REPORT_SIZE)
+
+      if (reachedMaxSize) {
+        await this.flushTracing()
+      }
+    }
+  }
+
+  async flushTracing(): Promise<ResponseData | null | undefined> {
+    const { traceBuilders, opts, app } = this
+
     if (traceBuilders.length === 0) {
       return
     }
@@ -39,27 +77,33 @@ export function flushTraces(
     let res: ResponseData | null = null
     try {
       res = await sendReport(report, opts, app)
-      app.log.info(`${tracesCount} apollo traces report sent`)
+      app.log.debug(`${tracesCount} apollo traces report sent`)
     } catch (err) {
-      app.log.info(`${tracesCount} apollo traces failed to send`)
+      app.log.debug(`${tracesCount} apollo traces failed to send`)
       app.log.error(err)
     }
 
     return res
   }
-  const interval = setInterval(
-    flushTracingNow,
-    opts.reportIntervalMs ?? 10 * 1000
-  )
-  interval.unref()
-  app.addHook('onClose', (_instance, done) => {
-    clearInterval(interval)
-    done()
-  })
 
-  app.decorate('flushApolloTracing', flushTracingNow)
+  runFlushTracesConsumer(): void {
+    const { opts, app } = this
+
+    const interval = setInterval(
+      this.flushTracing,
+      opts.reportIntervalMs ?? DEFAULT_MAX_REPORT_TIME
+    )
+    interval.unref()
+    app.addHook('onClose', (_instance, done) => {
+      clearInterval(interval)
+      done()
+    })
+  }
 }
 
+/**
+ * periodically gathers all the traces and sends them to apollo ingress endpoint
+ */
 export function addTraceToReportAndFinishTiming(
   traceBuilder: ApolloTraceBuilder,
   report: OurReport
