@@ -39,7 +39,7 @@
     "mercurius": "8.x"
   },
   "devDependencies": {
-    "@commitlint/cli": "^14.1.0",
+    "@commitlint/cli": "^15.0.0",
     "@commitlint/config-conventional": "^15.0.0",
     "@types/faker": "^5.5.8",
     "@types/node": "^16.9.6",
