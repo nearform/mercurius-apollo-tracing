@@ -8,6 +8,7 @@ import {
 import { Trace, google } from 'apollo-reporting-protobuf'
 import { Logger } from 'apollo-server-types'
 import { defaultUsageReportingSignature } from 'apollo-graphql'
+import { ReferencedFieldsByType } from 'apollo-server-core/dist/plugin/usageReporting/referencedFields'
 
 function internalError(message: string) {
   return new Error(`[internal mercurius error] ${message}`)
@@ -22,6 +23,8 @@ export class ApolloTraceBuilder {
 
   public trace = new Trace({ root: this.rootNode })
   public startHrTime?: [number, number]
+  public referencedFieldsByType: ReferencedFieldsByType = Object.create(null)
+
   private stopped = false
   private nodes = new Map<string, Trace.Node>([
     [responsePathAsString(), this.rootNode]

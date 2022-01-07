@@ -3,7 +3,6 @@ import os, { hostname } from 'os'
 import { FastifyInstance } from 'fastify'
 import { ReportHeader, Trace } from 'apollo-reporting-protobuf'
 import { computeCoreSchemaHash } from 'apollo-server-core/dist/plugin/schemaReporting'
-import { ReferencedFieldsByType } from 'apollo-server-core/dist/plugin/usageReporting/referencedFields'
 import { OurReport } from 'apollo-server-core/dist/plugin/usageReporting/stats'
 import { GraphQLSchema, printSchema } from 'graphql'
 import { ResponseData } from 'undici/types/dispatcher'
@@ -120,13 +119,12 @@ export function addTraceToReportAndFinishTiming(
   }
 
   report.endTime = dateToProtoTimestamp(new Date())
-  const referencedFieldsByType: ReferencedFieldsByType = Object.create(null)
   report.addTrace({
     statsReportKey: querySignature,
     trace,
     asTrace: true,
     includeTracesContributingToStats: false,
-    referencedFieldsByType
+    referencedFieldsByType: traceBuilder.referencedFieldsByType
   })
 }
 
