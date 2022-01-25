@@ -123,7 +123,8 @@ export function addTraceToReportAndFinishTiming(
     statsReportKey: querySignature,
     trace,
     asTrace: true,
-    includeTracesContributingToStats: false
+    includeTracesContributingToStats: false,
+    referencedFieldsByType: traceBuilder.referencedFieldsByType
   })
 }
 

@@ -21,6 +21,7 @@ const fakeReport = {
     '# Foo\nquery Foo { user { email pets { name } } }': {
       trace: [],
       statsWithContext: [],
+      referencedFieldsByType: {},
       internalTracesContributingToStats: []
     }
   }
