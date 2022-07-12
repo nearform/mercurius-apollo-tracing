@@ -57,7 +57,7 @@
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-standard": "^5.0.0",
     "faker": "^5.5.3",
-    "fastify": "^3.21.3",
+    "fastify": "^4.2.1",
     "fastify-cors": "^6.0.2",
     "graphql": "^15.6.0",
     "husky": "^8.0.1",
