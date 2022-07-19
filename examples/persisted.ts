@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 import fastify from 'fastify'
 import mercurius from 'mercurius'
-import cors from 'fastify-cors'
+import cors from '@fastify/cors'
 
 import mercuriusMetrics from '../src/index'
 
