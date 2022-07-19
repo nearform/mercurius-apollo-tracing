@@ -8,7 +8,7 @@ import {
 import { Trace, google } from 'apollo-reporting-protobuf'
 import { Logger } from 'apollo-server-types'
 import { defaultUsageReportingSignature } from 'apollo-graphql'
-import { ReferencedFieldsByType } from 'apollo-server-core/dist/plugin/usageReporting/referencedFields'
+import { ReferencedFieldsByType } from '@apollo/utils.usagereporting'
 
 function internalError(message: string) {
   return new Error(`[internal mercurius error] ${message}`)
