@@ -7,8 +7,9 @@ import {
 } from 'graphql'
 import { Trace, google } from 'apollo-reporting-protobuf'
 import { Logger } from 'apollo-server-types'
-import { defaultUsageReportingSignature } from 'apollo-graphql'
 import { ReferencedFieldsByType } from '@apollo/utils.usagereporting'
+
+import { defaultUsageReportingSignature } from './defaultUsageReportingSignature'
 
 function internalError(message: string) {
   return new Error(`[internal mercurius error] ${message}`)
@@ -228,15 +229,14 @@ export class ApolloTraceBuilder {
       // extensions the same if it isn't explicitly changed (to, eg, {}). (Note
       // that many of the fields of GraphQLError are not enumerable and won't
       // show up in the trace (even in the json field) anyway.)
-      return new GraphQLError(
-        rewrittenError.message,
-        err.nodes,
-        err.source,
-        err.positions,
-        err.path,
-        err.originalError,
-        rewrittenError.extensions || err.extensions
-      )
+      return new GraphQLError(rewrittenError.message, {
+        nodes: err.nodes,
+        source: err.source,
+        positions: err.positions,
+        path: err.path,
+        originalError: err.originalError,
+        extensions: rewrittenError.extensions || err.extensions
+      })
     }
     return err
   }
