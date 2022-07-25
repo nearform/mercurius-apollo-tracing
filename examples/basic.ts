@@ -4,7 +4,7 @@ import mercurius from 'mercurius'
 
 import mercuriusMetrics from '../src/index'
 import { basicSchema, basicResolvers } from './basicSchema'
-import cors from 'fastify-cors'
+import cors from '@fastify/cors'
 
 dotenv.config()
 

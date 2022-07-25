@@ -1,4 +1,4 @@
-import { DocumentNode, SelectionNode } from 'graphql'
+import { DocumentNode, SelectionNode, Kind, OperationTypeNode } from 'graphql'
 import tap from 'tap'
 import sinon from 'sinon'
 
@@ -13,13 +13,13 @@ const testSelectionNode: SelectionNode = {
 } as any
 
 const document: DocumentNode = {
-  kind: 'Document',
+  kind: Kind.DOCUMENT,
   definitions: [
     {
-      kind: 'OperationDefinition',
-      operation: 'query',
+      kind: Kind.OPERATION_DEFINITION,
+      operation: OperationTypeNode.QUERY,
       selectionSet: {
-        kind: 'SelectionSet',
+        kind: Kind.SELECTION_SET,
         selections: [testSelectionNode]
       }
     }

@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from 'fastify'
 import fp from 'fastify-plugin'
 import 'mercurius' // needed for types
-import { calculateReferencedFieldsByType } from 'apollo-server-core/dist/plugin/usageReporting/referencedFields'
+import { calculateReferencedFieldsByType } from '@apollo/utils.usagereporting'
 import { getOperationAST } from 'graphql'
 
 import { ApolloTraceBuilder } from './ApolloTraceBuilder'
@@ -69,7 +69,7 @@ export default fp(
       context.__traceBuilder = traceBuilder
       const operationAST = getOperationAST(document)
       traceBuilder.referencedFieldsByType = calculateReferencedFieldsByType({
-        document: document,
+        document,
         schema: _schema,
         resolvedOperationName: operationAST?.name?.value ?? null
       })
@@ -109,7 +109,7 @@ export default fp(
     }
   },
   {
-    fastify: '3.x',
+    fastify: '4.x',
     name: 'mercuriusApolloTracing',
     dependencies: ['mercurius']
   }
