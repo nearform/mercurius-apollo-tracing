@@ -21,6 +21,8 @@ const DEFAULT_CHECK_REPORT_SIZE_REQUEST_COUNT_INTERVAL = 100
 export class TraceBuildersStore {
   app: FastifyInstance
   opts: MercuriusApolloTracingOptions
+  traceBuilders: ApolloTraceBuilder[] = []
+
   constructor(app: FastifyInstance, opts: MercuriusApolloTracingOptions) {
     this.app = app
     this.opts = opts
@@ -31,8 +33,6 @@ export class TraceBuildersStore {
     // from apollo-server core https://github.com/apollographql/apollo-server/blob/45be2704be5498595bd7a24ca7f330e59f628e3c/packages/apollo-server-core/src/plugin/usageReporting/stats.ts#L349
     return 2 + Buffer.byteLength(serialized)
   }
-
-  traceBuilders: ApolloTraceBuilder[] = []
 
   async pushTraceAndFlushIfTooBig(
     traceBuilder: ApolloTraceBuilder
@@ -61,7 +61,7 @@ export class TraceBuildersStore {
   async flushTracing(): Promise<ResponseData | null | undefined> {
     const { traceBuilders, opts, app } = this
 
-    if (traceBuilders.length === 0) {
+    if (!traceBuilders || traceBuilders.length === 0) {
       return
     }
     const tracesCount = traceBuilders.length
@@ -90,7 +90,7 @@ export class TraceBuildersStore {
     const { opts, app } = this
 
     const interval = setInterval(
-      this.flushTracing,
+      this.flushTracing.bind(this),
       opts.reportIntervalMs ?? DEFAULT_MAX_REPORT_TIME
     )
     interval.unref()
