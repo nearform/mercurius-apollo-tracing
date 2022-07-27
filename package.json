@@ -2,8 +2,8 @@
   "name": "mercurius-apollo-tracing",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nearform/mercurius-apollo-tracing"
