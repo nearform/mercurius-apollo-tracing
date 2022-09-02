@@ -35,7 +35,8 @@
   ],
   "peerDependencies": {
     "fastify": "4.x",
-    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0"
+    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0",
+    "mercurius": ">= 10.5.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.0.3",
@@ -72,10 +73,7 @@
     "apollo-reporting-protobuf": "^3.3.2",
     "apollo-server-core": "^3.10.0",
     "apollo-server-types": "^3.6.2",
-    "fastify": "4.x",
     "fastify-plugin": "^4.0.0",
-    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0",
-    "mercurius": "^10.5.1",
     "undici": "^5.8.0"
   },
   "engines": {
