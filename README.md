@@ -79,4 +79,4 @@ Yes this plugin works fine with them.
 
 ## Batched queries
 
-There's currently no support for batched queries. Please check [this related issue](https://github.com/nearform/mercurius-apollo-tracing/issues/125) for more information.
+Yes, this plugin supports batched queries.
