@@ -17,7 +17,7 @@ export function hookIntoSchemaResolvers(schema: GraphQLSchema): void {
           field.resolve = (self, arg, ctx, info) => {
             const operationName = info.operation.name?.value
 
-            if (operationName === 'IntrospectionQuery') {
+            if (operationName === 'IntrospectionQuery' || !ctx.__traceBuilder) {
               return originalFieldResolver(self, arg, ctx, info)
             }
             const traceBuilder: ApolloTraceBuilder = ctx.__traceBuilder
