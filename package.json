@@ -71,7 +71,7 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "@apollo/utils.usagereporting": "^1.0.0",
+    "@apollo/utils.usagereporting": "^2.0.0",
     "@faker-js/faker": "^7.3.0",
     "apollo-reporting-protobuf": "^3.3.2",
     "apollo-server-core": "^3.10.0",
