@@ -5,7 +5,7 @@ import { ReportHeader, Trace } from 'apollo-reporting-protobuf'
 import { computeCoreSchemaHash } from 'apollo-server-core/dist/plugin/schemaReporting'
 import { OurReport } from 'apollo-server-core/dist/plugin/usageReporting/stats'
 import { GraphQLSchema, printSchema } from 'graphql'
-import { ResponseData } from 'undici/types/dispatcher'
+import Dispatcher from 'undici/types/dispatcher'
 
 import pkgJson from '../package.json'
 
@@ -58,7 +58,7 @@ export class TraceBuildersStore {
     }
   }
 
-  async flushTracing(): Promise<ResponseData | null | undefined> {
+  async flushTracing(): Promise<Dispatcher.ResponseData | null | undefined> {
     const { traceBuilders, opts, app } = this
 
     if (!traceBuilders || traceBuilders.length === 0) {
@@ -74,7 +74,7 @@ export class TraceBuildersStore {
     }
     traceBuilders.length = 0
 
-    let res: ResponseData | null = null
+    let res: Dispatcher.ResponseData | null = null
     try {
       res = await sendReport(report, opts, app)
       app.log.debug(`${tracesCount} apollo traces report sent`)
