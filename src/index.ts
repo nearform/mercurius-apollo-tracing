@@ -1,4 +1,4 @@
-import { FastifyPluginCallback } from 'fastify'
+import { FastifyPluginCallback, FastifyReply } from 'fastify'
 import fp from 'fastify-plugin'
 import 'mercurius' // needed for types
 import { calculateReferencedFieldsByType } from '@apollo/utils.usagereporting'
@@ -47,6 +47,7 @@ declare module 'fastify' {
 declare module 'mercurius' {
   interface MercuriusContext {
     __traceBuilder: ApolloTraceBuilder
+    reply: FastifyReply
   }
 }
 
@@ -67,7 +68,10 @@ export default fp(
       traceBuilder.startTiming()
 
       context.__traceBuilder = traceBuilder
-      const operationAST = getOperationAST(document)
+
+      const body: any = context.reply?.request?.body
+
+      const operationAST = getOperationAST(document, body?.operationName)
       traceBuilder.referencedFieldsByType = calculateReferencedFieldsByType({
         document,
         schema: _schema,
