@@ -111,4 +111,44 @@ tap.test('trace store', async (t) => {
       })
     }
   )
+
+  t.test(
+    'should contain trace with reference to field used in query with with multiple operations',
+    async (tt) => {
+      const query = `
+      query GetPost {
+        post {
+          body
+        }
+      }
+      query GetWord {
+        word
+      }            
+    `
+
+      // prevent from emptying the store too soon
+      app.apolloTracingStore.flushTracing = async () => null
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/graphql',
+        payload: { query, operationName: 'GetPost' }
+      })
+
+      tt.equal(response.statusCode, 200)
+      tt.hasProp(JSON.parse(response.body).data.post, 'body')
+
+      tt.equal(app.apolloTracingStore.traceBuilders.length, 1)
+      tt.match(app.apolloTracingStore.traceBuilders[0], {
+        referencedFieldsByType: {
+          Query: {
+            fieldNames: ['post']
+          },
+          Post: {
+            fieldNames: ['body']
+          }
+        }
+      })
+    }
+  )
 })
