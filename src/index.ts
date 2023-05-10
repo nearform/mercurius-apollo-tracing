@@ -12,6 +12,8 @@ export type MercuriusApolloTracingOptions = {
   endpointUrl?: string
   graphRef: string
   apiKey: string
+  clientName?: string
+  clientVersion?: string
   /**
    * useful for lambda-like environment where the whole process exits
    */
@@ -66,6 +68,9 @@ export default fp(
         {}
       )
       traceBuilder.startTiming()
+
+      traceBuilder.trace.clientName = opts.clientName || ''
+      traceBuilder.trace.clientVersion = opts.clientVersion || ''
 
       context.__traceBuilder = traceBuilder
 
