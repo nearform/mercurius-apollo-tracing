@@ -70,6 +70,19 @@ export default fp(
       context.__traceBuilder = traceBuilder
 
       const body: any = context.reply?.request?.body
+      const headers = context.reply?.request?.headers
+
+      if ('apollographql-client-name' in headers) {
+        traceBuilder.trace.clientName =
+          typeof headers['apollographql-client-name'] === 'string'
+            ? headers['apollographql-client-name']
+            : ''
+
+        traceBuilder.trace.clientVersion =
+          typeof headers['apollographql-client-version'] === 'string'
+            ? headers['apollographql-client-version']
+            : ''
+      }
 
       const operationAST = getOperationAST(document, body?.operationName)
       traceBuilder.referencedFieldsByType = calculateReferencedFieldsByType({
