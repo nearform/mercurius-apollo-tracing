@@ -151,4 +151,39 @@ tap.test('trace store', async (t) => {
       })
     }
   )
+
+  t.test(
+    'should contain client name and version from request headers',
+    async (tt) => {
+      const query = `
+      query GetPost {
+        post {
+          body
+        }
+      }
+    `
+
+      // prevent from emptying the store too soon
+      app.apolloTracingStore.flushTracing = async () => null
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/graphql',
+        headers: {
+          'apollographql-client-name': 'dummy',
+          'apollographql-client-version': 'testing'
+        },
+        payload: { query, operationName: 'GetPost' }
+      })
+
+      tt.equal(response.statusCode, 200)
+
+      tt.match(app.apolloTracingStore.traceBuilders[0], {
+        trace: {
+          clientName: 'dummy',
+          clientVersion: 'testing'
+        }
+      })
+    }
+  )
 })
