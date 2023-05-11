@@ -72,7 +72,7 @@
   },
   "dependencies": {
     "@apollo/utils.usagereporting": "^3.0.0",
-    "@faker-js/faker": "^7.3.0",
+    "@faker-js/faker": "^8.0.0",
     "apollo-reporting-protobuf": "^3.3.2",
     "apollo-server-core": "^3.10.0",
     "apollo-server-types": "^3.6.2",
