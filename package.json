@@ -12,7 +12,6 @@
     "prepare": "tsc && husky install",
     "build": "tsc",
     "test": "NODE_ENV=test tap --ts --no-check-coverage --jobs=1",
-    "pretty-quick": "pretty-quick --staged",
     "lint": "eslint .",
     "example": "nodemon --watch './**/*.ts' --exec 'ts-node' ./examples/basic.ts"
   },
@@ -60,11 +59,10 @@
     "fastify": "^4.3.0",
     "graphql": "16.x",
     "husky": "^8.0.1",
-    "lint-staged": "^14.0.0",
+    "lint-staged": "^14.0.1",
     "mercurius": "^13.0.0",
     "nodemon": "^3.0.1",
     "prettier": "^2.7.1",
-    "pretty-quick": "^3.1.3",
     "sinon": "^16.0.0",
     "tap": "^16.3.0",
     "ts-node": "^10.9.1",
@@ -83,7 +81,8 @@
     "node": ">= 14"
   },
   "lint-staged": {
-    "*.ts": "eslint --cache --fix"
+    "*.ts": "eslint --cache --fix",
+    "*.{js,json,ts,md}": "prettier --write"
   },
   "contributors": [
     "Jiří Špác <jiri.spac@nearform.com>",
