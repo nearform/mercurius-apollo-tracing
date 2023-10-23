@@ -38,7 +38,7 @@
     "mercurius": ">= 10.5.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.0.3",
+    "@commitlint/cli": "^18.0.0",
     "@commitlint/config-conventional": "^18.0.0",
     "@fastify/cors": "^8.0.0",
     "@types/node": "^20.1.0",
