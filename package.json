@@ -11,7 +11,7 @@
   "scripts": {
     "prepare": "tsc && husky install",
     "build": "tsc",
-    "test": "NODE_ENV=test tap --ts --no-check-coverage --jobs=1",
+    "test": "NODE_ENV=test TAP_SNAPSHOT=1 tap --disable-coverage --allow-empty-coverage --jobs=1",
     "lint": "eslint .",
     "example": "nodemon --watch './**/*.ts' --exec 'ts-node' ./examples/basic.ts"
   },
