@@ -9,7 +9,7 @@
     "url": "git+https://github.com/nearform/mercurius-apollo-tracing"
   },
   "scripts": {
-    "prepare": "tsc && husky install",
+    "prepare": "tsc && husky",
     "build": "tsc",
     "test": "NODE_ENV=test TAP_SNAPSHOT=1 tap --disable-coverage --allow-empty-coverage --jobs=1",
     "lint": "eslint .",
