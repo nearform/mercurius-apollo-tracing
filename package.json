@@ -11,7 +11,7 @@
   "scripts": {
     "prepare": "tsc && husky",
     "build": "tsc",
-    "test": "NODE_ENV=test borp src/*.spec.ts",
+    "test": "NODE_ENV=test node --test -r ts-node/register src/*.spec.ts",
     "lint": "eslint .",
     "example": "nodemon --watch './**/*.ts' --exec 'ts-node' ./examples/basic.ts"
   },
@@ -45,7 +45,6 @@
     "@types/sinon": "^17.0.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.17.0",
-    "borp": "^0.18.0",
     "dotenv": "^16.0.1",
     "eslint": "^8.20.0",
     "eslint-config-prettier": "^9.0.0",
