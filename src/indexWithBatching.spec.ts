@@ -1,4 +1,5 @@
-import tap from 'tap'
+import { beforeEach, describe, test, TestContext } from 'node:test'
+
 import Fastify from 'fastify'
 import mercurius from 'mercurius'
 
@@ -6,10 +7,10 @@ import { basicResolvers, basicSchema } from '../examples/basicSchema'
 
 import plugin from './index'
 
-tap.test('trace store with batching', async (t) => {
+describe('trace store with batching', async () => {
   let app
 
-  t.beforeEach(async () => {
+  beforeEach(async () => {
     app = Fastify()
     await app.register(mercurius, {
       schema: basicSchema,
@@ -34,61 +35,70 @@ tap.test('trace store with batching', async (t) => {
     })
   })
 
-  t.test(
-    'should contain two traces with references to fields used in each query operation',
-    async (tt) => {
-      // prevent from emptying the store too soon
-      app.apolloTracingStore.flushTracing = async () => null
+  test('should contain two traces with references to fields used in each query operation', async (t: TestContext) => {
+    // prevent from emptying the store too soon
+    app.apolloTracingStore.flushTracing = async () => null
 
-      await app.inject({
-        method: 'POST',
-        url: '/graphql',
-        body: [
-          {
-            operationName: 'FirstQuery',
-            query: `query FirstQuery {
+    await app.inject({
+      method: 'POST',
+      url: '/graphql',
+      body: [
+        {
+          operationName: 'FirstQuery',
+          query: `query FirstQuery {
               post {
                 title
               }
             }`
-          },
-          {
-            operationName: 'SecondQuery',
-            query: `query SecondQuery {
+        },
+        {
+          operationName: 'SecondQuery',
+          query: `query SecondQuery {
               post {
                 body
               }
             }`
-          }
-        ]
-      })
-
-      tt.match(app.apolloTracingStore.traceBuilders, [
-        {
-          querySignature: '# -\nquery FirstQuery{post{title}}',
-          referencedFieldsByType: {
-            Query: {
-              fieldNames: ['post']
-            },
-            Post: {
-              fieldNames: ['title']
-            }
-          },
-          stopped: true
-        },
-        {
-          querySignature: '# -\nquery SecondQuery{post{body}}',
-          referencedFieldsByType: {
-            Query: {
-              fieldNames: ['post']
-            },
-            Post: {
-              fieldNames: ['body']
-            }
-          },
-          stopped: true
         }
-      ])
-    }
-  )
+      ]
+    })
+
+    t.assert.deepStrictEqual(app.apolloTracingStore.traceBuilders.length, 2)
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].querySignature,
+      '# -\nquery FirstQuery{post{title}}'
+    )
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].referencedFieldsByType.Query
+        .fieldNames,
+      ['post']
+    )
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].referencedFieldsByType.Post
+        .fieldNames,
+      ['title']
+    )
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].stopped,
+      true
+    )
+
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[1].querySignature,
+      '# -\nquery SecondQuery{post{body}}'
+    )
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[1].referencedFieldsByType.Query
+        .fieldNames,
+      ['post']
+    )
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[1].referencedFieldsByType.Post
+        .fieldNames,
+      ['body']
+    )
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[1].stopped,
+      true
+    )
+  })
 })

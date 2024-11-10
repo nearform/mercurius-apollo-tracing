@@ -1,5 +1,6 @@
-import { DocumentNode, SelectionNode, Kind, OperationTypeNode } from 'graphql'
-import tap from 'tap'
+import { afterEach, describe, test, TestContext } from 'node:test'
+
+import { DocumentNode, Kind, OperationTypeNode, SelectionNode } from 'graphql'
 import sinon from 'sinon'
 
 import { ApolloTraceBuilder } from './ApolloTraceBuilder'
@@ -26,17 +27,17 @@ const document: DocumentNode = {
   ]
 }
 
-tap.test('builds the query signature', async (t) => {
+test('builds the query signature', async (t) => {
   const traceBuilder = new ApolloTraceBuilder(document, {})
-  t.equal(traceBuilder.querySignature, '# -\n{test}')
+  t.assert.equal(traceBuilder.querySignature, '# -\n{test}')
 })
 
-tap.test('timers', async (t) => {
+describe('timers', async () => {
   let clock
-  t.afterEach(() => {
+  afterEach(() => {
     clock.restore()
   })
-  t.test('start and end times match time change', async (tt) => {
+  test('start and end times match time change', async (t: TestContext) => {
     const startTime = 1483228800000
     const tickTime = 10000
     clock = sinon.useFakeTimers({ now: startTime })
@@ -47,11 +48,11 @@ tap.test('timers', async (t) => {
 
     traceBuilder.stopTiming()
 
-    tt.same(traceBuilder.trace.startTime, {
+    t.assert.deepEqual(traceBuilder.trace.startTime, {
       seconds: startTime / 1000,
       nanos: 0
     })
-    tt.same(traceBuilder.trace.endTime, {
+    t.assert.deepEqual(traceBuilder.trace.endTime, {
       seconds: (startTime + tickTime) / 1000,
       nanos: 0
     })

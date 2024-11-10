@@ -1,4 +1,5 @@
-import tap from 'tap'
+import { afterEach, beforeEach, describe, test, TestContext } from 'node:test'
+
 import Fastify from 'fastify'
 import fp from 'fastify-plugin'
 import mercurius from 'mercurius'
@@ -13,9 +14,9 @@ function makeStubMercurius() {
   })
 }
 
-tap.test('plugin registration', async (t) => {
+describe('plugin registration', async () => {
   let fastify
-  t.beforeEach(async () => {
+  beforeEach(async () => {
     fastify = Fastify()
     fastify.register(makeStubMercurius())
     fastify.graphql = {
@@ -28,34 +29,34 @@ tap.test('plugin registration', async (t) => {
     }
   })
 
-  t.afterEach(async () => {
-    return t.teardown(fastify.close.bind(fastify))
+  afterEach(async () => {
+    fastify.close()
   })
 
-  t.test('plugin should exist and load without error', async () => {
+  test('plugin should exist and load without error', async () => {
     fastify.register(plugin, {
       apiKey: 'test-api-key',
       schema: ''
     })
 
-    return fastify.ready()
+    await fastify.ready()
   })
 
-  t.test('plugin should throw an error if api key is missing', async (t) => {
+  test('plugin should throw an error if api key is missing', async (t) => {
     fastify.register(plugin, {
       schema: ''
     })
 
-    return t.rejects(
+    await t.assert.rejects(
       () => fastify.ready(),
-      'an Apollo Studio API key is required'
+      new Error('an Apollo Studio API key is required')
     )
   })
 })
 
-tap.test('trace store', async (t) => {
+describe('trace store', async () => {
   let app
-  t.beforeEach(async () => {
+  beforeEach(async () => {
     app = Fastify()
     app.register(mercurius, {
       schema: basicSchema,
@@ -79,43 +80,39 @@ tap.test('trace store', async (t) => {
     })
   })
 
-  t.test(
-    'should contain trace with reference to field used in query',
-    async (tt) => {
-      const query = `
+  test('should contain trace with reference to field used in query', async (t: TestContext) => {
+    const query = `
       query testQuery {
         post {
           body
         }
       }`
 
-      // prevent from emptying the store too soon
-      app.apolloTracingStore.flushTracing = async () => null
+    // prevent from emptying the store too soon
+    app.apolloTracingStore.flushTracing = async () => null
 
-      await app.inject({
-        method: 'POST',
-        url: '/graphql',
-        payload: { query }
-      })
+    await app.inject({
+      method: 'POST',
+      url: '/graphql',
+      payload: { query }
+    })
 
-      tt.equal(app.apolloTracingStore.traceBuilders.length, 1)
-      tt.match(app.apolloTracingStore.traceBuilders[0], {
-        referencedFieldsByType: {
-          Query: {
-            fieldNames: ['post']
-          },
-          Post: {
-            fieldNames: ['body']
-          }
-        }
-      })
-    }
-  )
+    t.assert.equal(app.apolloTracingStore.traceBuilders.length, 1)
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].referencedFieldsByType.Query
+        .fieldNames,
+      ['post']
+    )
 
-  t.test(
-    'should contain trace with reference to field used in query with with multiple operations',
-    async (tt) => {
-      const query = `
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].referencedFieldsByType.Post
+        .fieldNames,
+      ['body']
+    )
+  })
+
+  test('should contain trace with reference to field used in query with with multiple operations', async (t: TestContext) => {
+    const query = `
       query GetPost {
         post {
           body
@@ -123,39 +120,38 @@ tap.test('trace store', async (t) => {
       }
       query GetWord {
         word
-      }            
+      }
     `
 
-      // prevent from emptying the store too soon
-      app.apolloTracingStore.flushTracing = async () => null
+    // prevent from emptying the store too soon
+    app.apolloTracingStore.flushTracing = async () => null
 
-      const response = await app.inject({
-        method: 'POST',
-        url: '/graphql',
-        payload: { query, operationName: 'GetPost' }
-      })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/graphql',
+      payload: { query, operationName: 'GetPost' }
+    })
 
-      tt.equal(response.statusCode, 200)
-      tt.hasProp(JSON.parse(response.body).data.post, 'body')
+    t.assert.equal(response.statusCode, 200)
+    t.assert.ok(JSON.parse(response.body).data.post.body)
 
-      tt.equal(app.apolloTracingStore.traceBuilders.length, 1)
-      tt.match(app.apolloTracingStore.traceBuilders[0], {
-        referencedFieldsByType: {
-          Query: {
-            fieldNames: ['post']
-          },
-          Post: {
-            fieldNames: ['body']
-          }
-        }
-      })
-    }
-  )
+    t.assert.equal(app.apolloTracingStore.traceBuilders.length, 1)
 
-  t.test(
-    'should contain client name and version from request headers',
-    async (tt) => {
-      const query = `
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].referencedFieldsByType.Query
+        .fieldNames,
+      ['post']
+    )
+
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].referencedFieldsByType.Post
+        .fieldNames,
+      ['body']
+    )
+  })
+
+  test('should contain client name and version from request headers', async (t: TestContext) => {
+    const query = `
       query GetPost {
         post {
           body
@@ -163,27 +159,29 @@ tap.test('trace store', async (t) => {
       }
     `
 
-      // prevent from emptying the store too soon
-      app.apolloTracingStore.flushTracing = async () => null
+    // prevent from emptying the store too soon
+    app.apolloTracingStore.flushTracing = async () => null
 
-      const response = await app.inject({
-        method: 'POST',
-        url: '/graphql',
-        headers: {
-          'apollographql-client-name': 'dummy',
-          'apollographql-client-version': 'testing'
-        },
-        payload: { query, operationName: 'GetPost' }
-      })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/graphql',
+      headers: {
+        'apollographql-client-name': 'dummy',
+        'apollographql-client-version': 'testing'
+      },
+      payload: { query, operationName: 'GetPost' }
+    })
 
-      tt.equal(response.statusCode, 200)
+    t.assert.equal(response.statusCode, 200)
 
-      tt.match(app.apolloTracingStore.traceBuilders[0], {
-        trace: {
-          clientName: 'dummy',
-          clientVersion: 'testing'
-        }
-      })
-    }
-  )
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].trace.clientName,
+      'dummy'
+    )
+
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].trace.clientVersion,
+      'testing'
+    )
+  })
 })
