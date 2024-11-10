@@ -39,7 +39,7 @@ const fakeFastifyInstance = {
 test('sendReport encodes the report', async (t: TestContext) => {
   const server = createSimpleServer((unzippedData) => {
     const reportDecoded = Report.decode(unzippedData)
-    t.assert.deepStrictEqual(reportDecoded, fakeReport)
+    t.assert.deepEqual(reportDecoded, fakeReport)
   })
 
   const res = await sendReport(

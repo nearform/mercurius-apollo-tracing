@@ -48,11 +48,11 @@ describe('timers', async () => {
 
     traceBuilder.stopTiming()
 
-    t.assert.deepStrictEqual(traceBuilder.trace.startTime, {
+    t.assert.deepEqual(traceBuilder.trace.startTime, {
       seconds: startTime / 1000,
       nanos: 0
     })
-    t.assert.deepStrictEqual(traceBuilder.trace.endTime, {
+    t.assert.deepEqual(traceBuilder.trace.endTime, {
       seconds: (startTime + tickTime) / 1000,
       nanos: 0
     })

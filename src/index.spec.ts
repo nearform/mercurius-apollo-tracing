@@ -14,7 +14,7 @@ function makeStubMercurius() {
   })
 }
 
-test('plugin registration', async (t) => {
+describe('plugin registration', async () => {
   let fastify
   beforeEach(async () => {
     fastify = Fastify()
@@ -33,28 +33,28 @@ test('plugin registration', async (t) => {
     fastify.close()
   })
 
-  t.test('plugin should exist and load without error', async () => {
+  test('plugin should exist and load without error', async () => {
     fastify.register(plugin, {
       apiKey: 'test-api-key',
       schema: ''
     })
 
-    return fastify.ready()
+    await fastify.ready()
   })
 
-  t.test('plugin should throw an error if api key is missing', async (t) => {
+  test('plugin should throw an error if api key is missing', async (t) => {
     fastify.register(plugin, {
       schema: ''
     })
 
-    return t.assert.rejects(
+    await t.assert.rejects(
       () => fastify.ready(),
-      'an Apollo Studio API key is required'
+      new Error('an Apollo Studio API key is required')
     )
   })
 })
 
-describe('trace store', async (t) => {
+describe('trace store', async () => {
   let app
   beforeEach(async () => {
     app = Fastify()
@@ -98,16 +98,17 @@ describe('trace store', async (t) => {
     })
 
     t.assert.equal(app.apolloTracingStore.traceBuilders.length, 1)
-    t.assert.deepStrictEqual(app.apolloTracingStore.traceBuilders[0], {
-      referencedFieldsByType: {
-        Query: {
-          fieldNames: ['post']
-        },
-        Post: {
-          fieldNames: ['body']
-        }
-      }
-    })
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].referencedFieldsByType.Query
+        .fieldNames,
+      ['post']
+    )
+
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].referencedFieldsByType.Post
+        .fieldNames,
+      ['body']
+    )
   })
 
   test('should contain trace with reference to field used in query with with multiple operations', async (t: TestContext) => {
@@ -135,16 +136,18 @@ describe('trace store', async (t) => {
     t.assert.ok(JSON.parse(response.body).data.post.body)
 
     t.assert.equal(app.apolloTracingStore.traceBuilders.length, 1)
-    t.assert.deepStrictEqual(app.apolloTracingStore.traceBuilders[0], {
-      referencedFieldsByType: {
-        Query: {
-          fieldNames: ['post']
-        },
-        Post: {
-          fieldNames: ['body']
-        }
-      }
-    })
+
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].referencedFieldsByType.Query
+        .fieldNames,
+      ['post']
+    )
+
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].referencedFieldsByType.Post
+        .fieldNames,
+      ['body']
+    )
   })
 
   test('should contain client name and version from request headers', async (t: TestContext) => {
@@ -171,11 +174,14 @@ describe('trace store', async (t) => {
 
     t.assert.equal(response.statusCode, 200)
 
-    t.assert.deepStrictEqual(app.apolloTracingStore.traceBuilders[0], {
-      trace: {
-        clientName: 'dummy',
-        clientVersion: 'testing'
-      }
-    })
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].trace.clientName,
+      'dummy'
+    )
+
+    t.assert.deepStrictEqual(
+      app.apolloTracingStore.traceBuilders[0].trace.clientVersion,
+      'testing'
+    )
   })
 })

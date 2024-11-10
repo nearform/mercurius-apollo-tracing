@@ -1,4 +1,4 @@
-import { test } from 'node:test'
+import { test, TestContext } from 'node:test'
 
 import { Report } from 'apollo-reporting-protobuf'
 import fastify from 'fastify'
@@ -9,7 +9,7 @@ import mercuriusMetrics from '../src/index'
 
 import { createSimpleServer } from './createSimpleServer'
 
-test('e2e metrics including "sample error" error are reported', async (t) => {
+test('e2e metrics including "sample error" error are reported', async (t: TestContext) => {
   const endpointUrl = 'http://localhost:3334'
   const server = createSimpleServer((unzippedData) => {
     const reportDecoded = Report.decode(unzippedData)
@@ -46,7 +46,18 @@ test('e2e metrics including "sample error" error are reported', async (t) => {
 
   t.assert.equal(response.statusCode, 200)
 
-  t.assert.snapshot(JSON.parse(response.payload).errors)
+  t.assert.deepStrictEqual(JSON.parse(response.payload).errors, [
+    {
+      locations: [
+        {
+          column: 9,
+          line: 3
+        }
+      ],
+      message: 'sample error',
+      path: ['throwErr']
+    }
+  ])
 
   await app.apolloTracingStore.flushTracing()
 
