@@ -1,16 +1,17 @@
-import { Report } from 'apollo-reporting-protobuf'
-import tap from 'tap'
-import {
-  MockAgent,
-  setGlobalDispatcher,
-  getGlobalDispatcher,
-  Dispatcher
-} from 'undici'
-import sinon from 'sinon'
-import { FastifyInstance } from 'fastify'
+import { afterEach, beforeEach, describe, test, TestContext } from 'node:test'
 
-import { sendReport } from './sendReport'
+import { Report } from 'apollo-reporting-protobuf'
+import { FastifyInstance } from 'fastify'
+import sinon from 'sinon'
+import {
+  Dispatcher,
+  getGlobalDispatcher,
+  MockAgent,
+  setGlobalDispatcher
+} from 'undici'
+
 import { createSimpleServer } from './createSimpleServer'
+import { sendReport } from './sendReport'
 
 const fakeReport = {
   header: {
@@ -35,10 +36,10 @@ const fakeFastifyInstance = {
   }
 } as any as FastifyInstance
 
-tap.test('sendReport encodes the report', async (t) => {
+test('sendReport encodes the report', async (t: TestContext) => {
   const server = createSimpleServer((unzippedData) => {
     const reportDecoded = Report.decode(unzippedData)
-    t.same(reportDecoded, fakeReport)
+    t.assert.deepStrictEqual(reportDecoded, fakeReport)
   })
 
   const res = await sendReport(
@@ -51,29 +52,28 @@ tap.test('sendReport encodes the report', async (t) => {
     fakeFastifyInstance
   )
 
-  t.equal(res.statusCode, 200)
+  t.assert.equal(res.statusCode, 200)
 
   server.close()
-  t.end()
 })
 
-tap.test('with mocked http', async (t) => {
+describe('with mocked http', async () => {
   const endpointUrl = 'http://www.example.com'
 
   let agent: MockAgent
   let originalDispatcher: Dispatcher
-  t.beforeEach(() => {
+  beforeEach(() => {
     agent = new MockAgent()
     agent.disableNetConnect()
     originalDispatcher = getGlobalDispatcher()
     setGlobalDispatcher(agent)
   })
-  t.afterEach(() => {
+  afterEach(() => {
     agent.enableNetConnect()
     setGlobalDispatcher(originalDispatcher)
   })
 
-  t.test('sendReport success', async (tt) => {
+  test('sendReport success', async (t: TestContext) => {
     agent
       .get(endpointUrl)
       .intercept({
@@ -91,9 +91,9 @@ tap.test('with mocked http', async (t) => {
       },
       fakeFastifyInstance
     )
-    return tt.equal(res.statusCode, 200)
+    t.assert.equal(res.statusCode, 200)
   })
-  t.test('sendReport error', async (tt) => {
+  test('sendReport error', async (t: TestContext) => {
     agent
       .get(endpointUrl)
       .intercept({
@@ -111,7 +111,7 @@ tap.test('with mocked http', async (t) => {
       },
       fakeFastifyInstance
     )
-    tt.equal(res.statusCode, 400)
-    return tt.equal(logErrorSpy.called, true)
+    t.assert.equal(res.statusCode, 400)
+    t.assert.equal(logErrorSpy.called, true)
   })
 })

@@ -11,7 +11,7 @@
   "scripts": {
     "prepare": "tsc && husky",
     "build": "tsc",
-    "test": "NODE_ENV=test TAP_SNAPSHOT=1 tap --disable-coverage --allow-empty-coverage --jobs=1",
+    "test": "NODE_ENV=test node --test --experimental-strip-types",
     "lint": "eslint .",
     "example": "nodemon --watch './**/*.ts' --exec 'ts-node' ./examples/basic.ts"
   },
@@ -43,7 +43,6 @@
     "@fastify/cors": "^10.0.1",
     "@types/node": "^22.0.0",
     "@types/sinon": "^17.0.0",
-    "@types/tap": "^15.0.7",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.17.0",
     "dotenv": "^16.0.1",
@@ -64,7 +63,6 @@
     "nodemon": "^3.0.1",
     "prettier": "^3.1.1",
     "sinon": "^19.0.2",
-    "tap": "^21.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.2"
   },
