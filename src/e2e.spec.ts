@@ -5,16 +5,39 @@ import fastify from 'fastify'
 import mercurius from 'mercurius'
 
 import { basicResolvers, basicSchema } from '../examples/basicSchema'
-import mercuriusMetrics from '../src/index'
 
 import { createSimpleServer } from './createSimpleServer'
 
+import mercuriusMetrics from './index'
+
 test('e2e metrics including "sample error" error are reported', async (t: TestContext) => {
   const endpointUrl = 'http://localhost:3334'
+  let promiseResolve, promiseReject
+  const promise = new Promise<void>((resolve, reject) => {
+    promiseResolve = resolve
+    promiseReject = reject
+  })
   const server = createSimpleServer((unzippedData) => {
-    const reportDecoded = Report.decode(unzippedData)
-    delete reportDecoded.header
-    t.assert.snapshot(reportDecoded)
+    try {
+      const reportDecoded = Report.decode(unzippedData)
+
+      t.assert.deepStrictEqual(
+        reportDecoded.tracesPerQuery['# -\nquery dummyQuery{word}']
+          .referencedFieldsByType!.Query.fieldNames,
+        ['word']
+      )
+      t.assert.deepStrictEqual(
+        reportDecoded.tracesPerQuery['# -\nquery dummyQuery{word}']
+          .referencedFieldsByType!.Query.isInterface,
+        false
+      )
+      t.assert.deepStrictEqual(reportDecoded.operationCount, 0)
+      t.assert.deepStrictEqual(reportDecoded.tracesPreAggregated, false)
+
+      promiseResolve()
+    } catch (e) {
+      promiseReject(e)
+    }
   })
 
   const app = fastify()
@@ -60,6 +83,8 @@ test('e2e metrics including "sample error" error are reported', async (t: TestCo
   ])
 
   await app.apolloTracingStore.flushTracing()
+
+  await promise
 
   server.close()
 })
