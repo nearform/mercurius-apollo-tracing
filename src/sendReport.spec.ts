@@ -37,15 +37,27 @@ const fakeFastifyInstance = {
 } as any as FastifyInstance
 
 test('sendReport encodes the report', async (t: TestContext) => {
-  const server = createSimpleServer((unzippedData) => {
-    const reportDecoded = Report.decode(unzippedData)
-    t.assert.deepEqual(reportDecoded, fakeReport)
+  let promiseResolve, promiseReject
+  const promise = new Promise<void>((resolve, reject) => {
+    promiseResolve = resolve
+    promiseReject = reject
   })
+
+  const server = createSimpleServer((unzippedData) => {
+    try {
+      const reportDecoded = Report.decode(unzippedData)
+      t.assert.deepEqual(reportDecoded, fakeReport)
+
+      promiseResolve()
+    } catch (e) {
+      promiseReject(e)
+    }
+  }, 3335)
 
   const res = await sendReport(
     fakeReport,
     {
-      endpointUrl: 'http://localhost:3334',
+      endpointUrl: 'http://localhost:3335',
       apiKey: 'fakeKey',
       graphRef: 'myGraph@current'
     },
@@ -53,6 +65,8 @@ test('sendReport encodes the report', async (t: TestContext) => {
   )
 
   t.assert.equal(res.statusCode, 200)
+
+  await promise
 
   server.close()
 })

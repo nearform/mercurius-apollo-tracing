@@ -2,7 +2,8 @@ import http from 'http'
 import zlib from 'zlib'
 
 export function createSimpleServer(
-  onData: (arg0: Buffer) => void
+  onData: (arg0: Buffer) => void,
+  listenPort: number = 3334
 ): http.Server {
   const requestListener = function (req, res) {
     const chunks: any[] = []
@@ -19,6 +20,6 @@ export function createSimpleServer(
   }
 
   const server = http.createServer(requestListener)
-  server.listen(3334)
+  server.listen(listenPort)
   return server
 }
