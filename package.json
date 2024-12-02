@@ -73,7 +73,7 @@
     "apollo-server-core": "^3.10.0",
     "apollo-server-types": "^3.6.2",
     "fastify-plugin": "^5.0.1",
-    "undici": "^6.2.1"
+    "undici": "^7.0.0"
   },
   "engines": {
     "node": ">= 14"
