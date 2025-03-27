@@ -1,3 +1,5 @@
+[![ci](https://github.com/nearform/mercurius-apollo-tracing/actions/workflows/ci.yml/badge.svg)](https://github.com/nearform/mercurius-apollo-tracing/actions/workflows/ci.yml)
+
 # mercurius-apollo-tracing
 
 Fastify plugin to be used with [Mercurius](https://mercurius.dev) to collect performance metrics from your Graphql resolvers and send them to apollo studio.
