@@ -43,7 +43,7 @@
     "@fastify/cors": "^11.0.0",
     "@types/node": "^22.0.0",
     "@types/sinon": "^17.0.0",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.33.1",
     "@typescript-eslint/parser": "^6.17.0",
     "dotenv": "^16.0.1",
     "eslint": "^8.20.0",
