@@ -41,7 +41,7 @@
     "@commitlint/cli": "^19.0.3",
     "@commitlint/config-conventional": "^19.0.3",
     "@fastify/cors": "^11.0.0",
-    "@types/node": "^22.0.0",
+    "@types/node": "^24.0.3",
     "@types/sinon": "^17.0.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.17.0",
