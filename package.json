@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.3",
-    "@commitlint/config-conventional": "^19.0.3",
+    "@commitlint/config-conventional": "^20.0.0",
     "@fastify/cors": "^11.0.0",
     "@types/node": "^24.0.3",
     "@types/sinon": "^17.0.0",
