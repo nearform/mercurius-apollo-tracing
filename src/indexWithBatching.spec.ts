@@ -1,7 +1,7 @@
 import { beforeEach, describe, test, TestContext } from 'node:test'
 
 import Fastify from 'fastify'
-import mercurius from 'mercurius'
+import { mercurius } from 'mercurius'
 
 import { basicResolvers, basicSchema } from '../examples/basicSchema'
 

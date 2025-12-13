@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import { promisify } from 'util'
 
 import fastify from 'fastify'
-import mercurius from 'mercurius'
+import { mercurius } from 'mercurius'
 import WebSocket from 'ws'
 
 import { resolvers, schema } from '../examples/subscriptionSchema'

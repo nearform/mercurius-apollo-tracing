@@ -186,7 +186,7 @@ export class ApolloTraceBuilder {
     }
     // Because we set up the root path when creating this.nodes, we now know
     // that path.prev isn't undefined.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     return this.newNode(path.prev!)
   }
 
