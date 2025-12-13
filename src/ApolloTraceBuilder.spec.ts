@@ -1,7 +1,7 @@
 import { afterEach, describe, test, TestContext } from 'node:test'
 
 import { DocumentNode, Kind, OperationTypeNode, SelectionNode } from 'graphql'
-import sinon from 'sinon'
+import { type SinonFakeTimers, useFakeTimers } from 'sinon'
 
 import { ApolloTraceBuilder } from './ApolloTraceBuilder'
 
@@ -33,14 +33,14 @@ test('builds the query signature', async (t) => {
 })
 
 describe('timers', async () => {
-  let clock
+  let clock: SinonFakeTimers
   afterEach(() => {
     clock.restore()
   })
   test('start and end times match time change', async (t: TestContext) => {
     const startTime = 1483228800000
     const tickTime = 10000
-    clock = sinon.useFakeTimers({ now: startTime })
+    clock = useFakeTimers({ now: startTime })
     const traceBuilder = new ApolloTraceBuilder(document, {})
     traceBuilder.startTiming()
 

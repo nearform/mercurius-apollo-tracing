@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, test, TestContext } from 'node:test'
 
 import { Report } from 'apollo-reporting-protobuf'
 import { FastifyInstance } from 'fastify'
-import sinon from 'sinon'
+import { spy } from 'sinon'
 import {
   Dispatcher,
   getGlobalDispatcher,
@@ -28,11 +28,11 @@ const fakeReport = {
   }
 }
 
-const logErrorSpy = sinon.spy()
+const logErrorSpy = spy()
 const fakeFastifyInstance = {
   log: {
     error: logErrorSpy,
-    info: sinon.spy()
+    info: spy()
   }
 } as any as FastifyInstance
 

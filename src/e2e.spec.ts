@@ -2,7 +2,7 @@ import { test, TestContext } from 'node:test'
 
 import { Report } from 'apollo-reporting-protobuf'
 import fastify from 'fastify'
-import mercurius from 'mercurius'
+import { mercurius } from 'mercurius'
 
 import { basicResolvers, basicSchema } from '../examples/basicSchema'
 

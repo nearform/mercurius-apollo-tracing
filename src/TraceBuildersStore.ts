@@ -1,11 +1,11 @@
 import os, { hostname } from 'os'
 
-import { FastifyInstance } from 'fastify'
 import { ReportHeader, Trace } from 'apollo-reporting-protobuf'
 import { computeCoreSchemaHash } from 'apollo-server-core/dist/plugin/schemaReporting'
 import { OurReport } from 'apollo-server-core/dist/plugin/usageReporting/stats'
+import { FastifyInstance } from 'fastify'
 import { GraphQLSchema, printSchema } from 'graphql'
-import Dispatcher from 'undici/types/dispatcher'
+import { type Dispatcher } from 'undici'
 
 import pkgJson from '../package.json'
 
