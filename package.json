@@ -72,7 +72,7 @@
     "apollo-reporting-protobuf": "^3.4.0",
     "apollo-server-core": "^3.13.0",
     "apollo-server-types": "^3.8.0",
-    "fastify-plugin": "^5.1.0",
+    "fastify-plugin": "^6.0.0",
     "undici": "^8.0.2"
   },
   "engines": {
