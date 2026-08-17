@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import { promisify } from 'util'
 
-import fastify from 'fastify'
+import Fastify from 'fastify'
 import { mercurius } from 'mercurius'
 import WebSocket from 'ws'
 
@@ -12,7 +12,7 @@ import plugin from './index'
 const sleep = promisify(setTimeout)
 
 test('metrics are reported when client is using subscription', async (t) => {
-  const app = fastify()
+  const app = Fastify()
   t.plan(2)
 
   app.register(mercurius, {
