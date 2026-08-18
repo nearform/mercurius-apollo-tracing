@@ -12,13 +12,33 @@ npm i mercurius-apollo-tracing
 
 ### Node version
 
-`engines.node` is `>= 22.19.0`, which is the floor declared by `undici@8` — this package's only
-runtime dependency with a Node constraint. That is deliberately the _consumer-facing_ floor and is
-kept as low as the runtime allows.
+`engines.node` is `>= 22.19.0`. That is the _highest_ floor declared by any runtime dependency, not
+the only one: five of the seven `dependencies` declare `engines.node`, and `undici@8` is the strictest
+of them.
 
-The dev toolchain wants a little more: `lint-staged@17` declares `>=22.22.1`, so `npm install` on
-Node 22.19–22.22 prints `EBADENGINE` for it. Use the version in `.nvmrc` (`lts/*`) when working on
-this repo and it will not come up.
+| Runtime dependency             | `engines.node`                                      |
+| ------------------------------ | --------------------------------------------------- |
+| `undici`                       | `>=22.19.0`                                         |
+| `@apollo/utils.usagereporting` | `>=16`                                              |
+| `apollo-server-core`           | `>=12.0`                                            |
+| `apollo-server-types`          | `>=12.0`                                            |
+| `@faker-js/faker`              | `^20.19.0 \|\| ^22.13.0 \|\| ^23.5.0 \|\| >=24.0.0` |
+
+`apollo-reporting-protobuf` and `fastify-plugin` declare no Node constraint. To re-derive the floor
+after a dependency bump, check all five rather than `undici` alone:
+
+```sh
+npm ls --omit=dev --all --parseable \
+  | xargs -I{} node -p "const p=require('{}/package.json');p.engines?.node?p.name+' '+p.engines.node:''" \
+  | sort -u
+```
+
+The floor is deliberately the _consumer-facing_ minimum and is kept as low as the runtime
+dependencies allow.
+
+The dev toolchain wants a little more: `lint-staged@17` declares `>=22.22.1`, so `npm install` on a
+Node 22 below 22.22.1 prints `EBADENGINE` for it. Use the version in `.nvmrc` (`lts/*`) when working
+on this repo and it will not come up.
 
 ## Usage
 
