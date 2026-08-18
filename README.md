@@ -10,6 +10,16 @@ Fastify plugin to be used with [Mercurius](https://mercurius.dev) to collect per
 npm i mercurius-apollo-tracing
 ```
 
+### Node version
+
+`engines.node` is `>= 22.19.0`, which is the floor declared by `undici@8` — this package's only
+runtime dependency with a Node constraint. That is deliberately the _consumer-facing_ floor and is
+kept as low as the runtime allows.
+
+The dev toolchain wants a little more: `lint-staged@17` declares `>=22.22.1`, so `npm install` on
+Node 22.19–22.22 prints `EBADENGINE` for it. Use the version in `.nvmrc` (`lts/*`) when working on
+this repo and it will not come up.
+
 ## Usage
 
 plugin can be registered like this:
