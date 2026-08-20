@@ -1,7 +1,7 @@
 import { test, TestContext } from 'node:test'
 
 import { Report } from 'apollo-reporting-protobuf'
-import fastify from 'fastify'
+import Fastify from 'fastify'
 import { mercurius } from 'mercurius'
 
 import { basicResolvers, basicSchema } from '../examples/basicSchema'
@@ -40,7 +40,7 @@ test('e2e metrics including "sample error" error are reported', async (t: TestCo
     }
   })
 
-  const app = fastify()
+  const app = Fastify()
   app.register(mercurius, {
     schema: basicSchema,
     resolvers: basicResolvers,

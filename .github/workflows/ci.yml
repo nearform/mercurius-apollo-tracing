@@ -12,7 +12,10 @@ jobs:
     strategy:
       matrix:
         node-version:
-          - 20
+          # exercises the `engines.node` floor itself, so the declared minimum is a
+          # tested claim rather than an assertion. This leg prints a non-fatal
+          # `EBADENGINE` warning for `lint-staged@17` (>=22.22.1); see README.
+          - 22.19.0
           - 22
           - 24
     steps:

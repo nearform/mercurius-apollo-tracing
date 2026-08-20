@@ -1,6 +1,7 @@
 import eslint from '@eslint/js'
 import tsParser from '@typescript-eslint/parser'
-import eslintPluginImport from 'eslint-plugin-import'
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript'
+import eslintPluginImportX from 'eslint-plugin-import-x'
 import prettier from 'eslint-plugin-prettier/recommended'
 import eslintPluginPromise from 'eslint-plugin-promise'
 import { defineConfig, globalIgnores } from 'eslint/config'
@@ -16,11 +17,14 @@ export default defineConfig(
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
-      eslintPluginImport.flatConfigs.recommended,
-      eslintPluginImport.flatConfigs.typescript
+      eslintPluginImportX.flatConfigs.recommended,
+      eslintPluginImportX.flatConfigs.typescript
     ],
+    settings: {
+      'import-x/resolver-next': [createTypeScriptImportResolver()]
+    },
     rules: {
-      'import/order': [
+      'import-x/order': [
         'error',
         {
           'newlines-between': 'always'
